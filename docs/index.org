@@ -8,9 +8,9 @@
 * Introduction
 
   This web page will guide you through the reproduction of the experiments, the
-  usage of our implementations or through the demonstration of some
-  techniques. You can navigate with the Table of Content, or directly click
-  below to:
+  usage of our implementations or through the demonstration of some techniques
+  discussed in the paper. You can navigate with the Table of Content, or
+  directly click below to:
   - [[#howto_spectre][Learn how to perform a Spectre attack with our implementation]]
   - [[#howto_spectre][Learn how to simulate Spectre with gem5]]
   - [[#howto_konata][Learn how to visualize the pipeline of a simulated processor with Konata]]
@@ -47,5 +47,5 @@
    
 * Appendices
 
-  - If you are a gem5 user and experienced some unresolved errors, you could
-    see the [[https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html][=docs/gem5_errors.html=]] file.
+  - If you are a gem5 user who experience some unresolved errors, you could see
+    the [[https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html][=docs/gem5_errors.html=]] file.

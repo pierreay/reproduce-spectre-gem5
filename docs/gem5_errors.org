@@ -1,8 +1,12 @@
-#+TITLE: gem5 Errors Troubleshooting Guide
+#+TITLE: Troubleshooting gem5 Errors
 #+AUTHOR: Pierre Ayoub
 #+EMAIL: pierre.ayoub@eurecom.fr
 #+LANGUAGE: en
 #+PROPERTY: header-args :eval never-export
 #+HTML_HEAD: <link rel="stylesheet" href="https://sandyuraz.com/styles/org.min.css">
 
-* TODO Status
+* Introduction
+
+  This guide reference some gem5 errors that we had to solve during our
+  development. This is far from a complete list, but still, it might help
+  someone.
