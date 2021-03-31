@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-03-31 mer. 11:14 -->
+<!-- 2021-03-31 mer. 11:23 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Troubleshooting gem5 Errors</title>
@@ -224,41 +224,41 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgf1198c4">1. Introduction</a>
+<li><a href="#org51938de">1. Introduction</a>
 <ul>
-<li><a href="#org05072ef">1.1. AttributeError: Can't resolve proxy 'any' of type 'XXX' from 'XXX'</a>
+<li><a href="#org2b0c4f8">1.1. AttributeError: Can't resolve proxy 'any' of type 'XXX' from 'XXX'</a>
 <ul>
-<li><a href="#org430ba70">1.1.1. <b>Goal</b></a></li>
-<li><a href="#orgf33ff7c">1.1.2. <b>Explanation</b></a></li>
-<li><a href="#orgc1e7486">1.1.3. <b>Resolution</b></a></li>
+<li><a href="#orge6321bf">1.1.1. Goal</a></li>
+<li><a href="#orge0a091f">1.1.2. Explanation</a></li>
+<li><a href="#org286067f">1.1.3. Resolution</a></li>
 </ul>
 </li>
-<li><a href="#orgc614605">1.2. gem5 has encountered a segmentation fault!</a>
+<li><a href="#orgcdbb2bc">1.2. gem5 has encountered a segmentation fault!</a>
 <ul>
-<li><a href="#org8465b26">1.2.1. <b>Goal</b></a></li>
-<li><a href="#org11b35d9">1.2.2. <b>Explanation</b></a></li>
-<li><a href="#orgd8d4a11">1.2.3. <b>Resolution</b></a></li>
+<li><a href="#orgd9bf018">1.2.1. Goal</a></li>
+<li><a href="#org55a50aa">1.2.2. Explanation</a></li>
+<li><a href="#org7dc0667">1.2.3. Resolution</a></li>
 </ul>
 </li>
-<li><a href="#org7cdfcb7">1.3. fatal: XXX</a>
+<li><a href="#orgf8ade69">1.3. fatal: XXX</a>
 <ul>
-<li><a href="#org51f2aa3">1.3.1. <b>Goal</b></a></li>
-<li><a href="#org92c8395">1.3.2. <b>Explanation</b></a></li>
-<li><a href="#orgd899ce0">1.3.3. <b>Resolution</b></a></li>
+<li><a href="#org22ee1dd">1.3.1. Goal</a></li>
+<li><a href="#org2020587">1.3.2. Explanation</a></li>
+<li><a href="#org573023f">1.3.3. Resolution</a></li>
 </ul>
 </li>
-<li><a href="#orge766941">1.4. panic: XXX port of XXX not connected to anything!</a>
+<li><a href="#orga31a631">1.4. panic: XXX port of XXX not connected to anything!</a>
 <ul>
-<li><a href="#orge6377c0">1.4.1. <b>Goal</b></a></li>
-<li><a href="#orgf0fc469">1.4.2. <b>Explanation</b></a></li>
-<li><a href="#orge8432cf">1.4.3. <b>Resolution</b></a></li>
+<li><a href="#org3335e0c">1.4.1. Goal</a></li>
+<li><a href="#org06f7451">1.4.2. Explanation</a></li>
+<li><a href="#org4543e51">1.4.3. Resolution</a></li>
 </ul>
 </li>
-<li><a href="#org305b67b">1.5. Kernel panic - not syncing: VFS: Unable to mount root fs</a>
+<li><a href="#org994046a">1.5. Kernel panic - not syncing: VFS: Unable to mount root fs</a>
 <ul>
-<li><a href="#orgef1c2ae">1.5.1. <b>Goal</b></a></li>
-<li><a href="#org42106db">1.5.2. <b>Explanation</b></a></li>
-<li><a href="#org9b939af">1.5.3. <b>Resolution</b></a></li>
+<li><a href="#orgf700fc7">1.5.1. Goal</a></li>
+<li><a href="#org6431177">1.5.2. Explanation</a></li>
+<li><a href="#org9cf7ab1">1.5.3. Resolution</a></li>
 </ul>
 </li>
 </ul>
@@ -267,8 +267,8 @@
 </div>
 </div>
 
-<div id="outline-container-orgf1198c4" class="outline-2">
-<h2 id="orgf1198c4"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-org51938de" class="outline-2">
+<h2 id="org51938de"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This guide reference some gem5 errors that we had to solve during our
@@ -277,26 +277,26 @@ someone.
 </p>
 </div>
 
-<div id="outline-container-org05072ef" class="outline-3">
-<h3 id="org05072ef"><span class="section-number-3">1.1</span> AttributeError: Can't resolve proxy 'any' of type 'XXX' from 'XXX'</h3>
+<div id="outline-container-org2b0c4f8" class="outline-3">
+<h3 id="org2b0c4f8"><span class="section-number-3">1.1</span> AttributeError: Can't resolve proxy 'any' of type 'XXX' from 'XXX'</h3>
 <div class="outline-text-3" id="text-1-1">
 </div>
-<div id="outline-container-org430ba70" class="outline-4">
-<h4 id="org430ba70"><span class="section-number-4">1.1.1</span> <b>Goal</b></h4>
+<div id="outline-container-orge6321bf" class="outline-4">
+<h4 id="orge6321bf"><span class="section-number-4">1.1.1</span> Goal</h4>
 <div class="outline-text-4" id="text-1-1-1">
 <ul class="org-ul">
 <li><p>
 This is the error we will troubleshoot:
 </p>
-<pre class="example" id="org665ad6a">
+<pre class="example" id="orgdb8b04d">
 AttributeError: Can't resolve proxy 'any' of type 'ArmSystem' from 'system.realview.generic_timer'
 </pre></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgf33ff7c" class="outline-4">
-<h4 id="orgf33ff7c"><span class="section-number-4">1.1.2</span> <b>Explanation</b></h4>
+<div id="outline-container-orge0a091f" class="outline-4">
+<h4 id="orge0a091f"><span class="section-number-4">1.1.2</span> Explanation</h4>
 <div class="outline-text-4" id="text-1-1-2">
 <ul class="org-ul">
 <li>The <i>proxy parameter</i> in <i>gem5</i> is a <i>Python</i> helper mechanism which is
@@ -333,8 +333,8 @@ it's name in the parent object.</li>
 </div>
 </div>
 
-<div id="outline-container-orgc1e7486" class="outline-4">
-<h4 id="orgc1e7486"><span class="section-number-4">1.1.3</span> <b>Resolution</b></h4>
+<div id="outline-container-org286067f" class="outline-4">
+<h4 id="org286067f"><span class="section-number-4">1.1.3</span> Resolution</h4>
 <div class="outline-text-4" id="text-1-1-3">
 <ul class="org-ul">
 <li>To resolve our problem, we have to find the <i>special proxy parameter</i>:
@@ -365,18 +365,18 @@ object to an <code>ArmSystem</code> object, or an object which inherit or the
 </div>
 </div>
 
-<div id="outline-container-orgc614605" class="outline-3">
-<h3 id="orgc614605"><span class="section-number-3">1.2</span> gem5 has encountered a segmentation fault!</h3>
+<div id="outline-container-orgcdbb2bc" class="outline-3">
+<h3 id="orgcdbb2bc"><span class="section-number-3">1.2</span> gem5 has encountered a segmentation fault!</h3>
 <div class="outline-text-3" id="text-1-2">
 </div>
-<div id="outline-container-org8465b26" class="outline-4">
-<h4 id="org8465b26"><span class="section-number-4">1.2.1</span> <b>Goal</b></h4>
+<div id="outline-container-orgd9bf018" class="outline-4">
+<h4 id="orgd9bf018"><span class="section-number-4">1.2.1</span> Goal</h4>
 <div class="outline-text-4" id="text-1-2-1">
 <ul class="org-ul">
 <li><p>
 Troubleshoot this kind of, is not understand, cryptic error:
 </p>
-<pre class="example" id="org2c065ac">
+<pre class="example" id="org06c831a">
 gem5 has encountered a segmentation fault!
 
 --- BEGIN LIBC BACKTRACE ---
@@ -418,8 +418,8 @@ gem5 has encountered a segmentation fault!
 </div>
 </div>
 
-<div id="outline-container-org11b35d9" class="outline-4">
-<h4 id="org11b35d9"><span class="section-number-4">1.2.2</span> <b>Explanation</b></h4>
+<div id="outline-container-org55a50aa" class="outline-4">
+<h4 id="org55a50aa"><span class="section-number-4">1.2.2</span> Explanation</h4>
 <div class="outline-text-4" id="text-1-2-2">
 <ul class="org-ul">
 <li>Arrive often with a <code>NULL</code> pointer which is dereferenced in <i>gem5</i>, caused by:
@@ -431,8 +431,8 @@ gem5 has encountered a segmentation fault!
 </div>
 </div>
 
-<div id="outline-container-orgd8d4a11" class="outline-4">
-<h4 id="orgd8d4a11"><span class="section-number-4">1.2.3</span> <b>Resolution</b></h4>
+<div id="outline-container-org7dc0667" class="outline-4">
+<h4 id="org7dc0667"><span class="section-number-4">1.2.3</span> Resolution</h4>
 <div class="outline-text-4" id="text-1-2-3">
 <ul class="org-ul">
 <li>Best thing is to use <i>gdb</i> here.</li>
@@ -452,25 +452,25 @@ where you want to go.</li>
 At some point, you will arrive at your segfault:
 </p>
 
-<pre class="example" id="org1b2bfff">
+<pre class="example" id="org0136929">
 Program received signal SIGSEGV, Segmentation fault.
 0x00005555568a15d4 in ArmSystem::ArmSystem (this=0x5555595cfb00, p=0x555558cba1a0) at build/ARM/arch/arm/system.cc:77
 77	        _resetAddr = workload-&gt;getEntry();
 </pre>
-<pre class="example" id="orga566a26">
+<pre class="example" id="org5cb6b57">
 $rsp   : 0x00007fffffffc6c0  →  0x00007ffff50c6398  →  0x0000000000000000
 $rbp   : 0x00005555595cfb00  →  0x0000555557e10020  →  0x0000555556d1fd70  →  &lt;ArmSystem::~ArmSystem()+0&gt; lea rax, [rip+0x10f02a9]        # 0x555557e10020 &lt;_ZTV9ArmSystem+16&gt;
 $rsi   : 0x0000555557f3e0a0  →  0x0000555558f53140  →  0x0000555558f53120  →  0x000055555961c540  →  0x000055555961c560  →  0x000055555961c580  →  0x000055555961c5a0  →  0x000055555961c5c0
 $rdi   : 0x0               
 $rip   : 0x00005555568a15d4  →  &lt;ArmSystem::ArmSystem(ArmSystemParams*)+276&gt; mov rax, QWORD PTR [rdi]
 </pre>
-<pre class="example" id="org823b33f">
+<pre class="example" id="org5e22f6e">
   0x5555568a15c4 &lt;ArmSystem::ArmSystem(ArmSystemParams*)+260&gt; cmp    BYTE PTR [rbx+0x144], 0x0
   0x5555568a15cb &lt;ArmSystem::ArmSystem(ArmSystemParams*)+267&gt; je     0x5555568a1648 &lt;ArmSystem::ArmSystem(ArmSystemParams*)+392&gt;
   0x5555568a15cd &lt;ArmSystem::ArmSystem(ArmSystemParams*)+269&gt; mov    rdi, QWORD PTR [rbp+0x190]
 → 0x5555568a15d4 &lt;ArmSystem::ArmSystem(ArmSystemParams*)+276&gt; mov    rax, QWORD PTR [rdi]
 </pre>
-<pre class="example" id="orgddd50c1">
+<pre class="example" id="orgf485a76">
     72	       _havePAN(p-&gt;have_pan),
     73	       semihosting(p-&gt;semihosting),
     74	       multiProc(p-&gt;multi_proc)
@@ -493,26 +493,26 @@ the wrong <code>SimObject</code> by inadvertence.</li>
 </div>
 </div>
 
-<div id="outline-container-org7cdfcb7" class="outline-3">
-<h3 id="org7cdfcb7"><span class="section-number-3">1.3</span> fatal: XXX</h3>
+<div id="outline-container-orgf8ade69" class="outline-3">
+<h3 id="orgf8ade69"><span class="section-number-3">1.3</span> fatal: XXX</h3>
 <div class="outline-text-3" id="text-1-3">
 </div>
-<div id="outline-container-org51f2aa3" class="outline-4">
-<h4 id="org51f2aa3"><span class="section-number-4">1.3.1</span> <b>Goal</b></h4>
+<div id="outline-container-org22ee1dd" class="outline-4">
+<h4 id="org22ee1dd"><span class="section-number-4">1.3.1</span> Goal</h4>
 <div class="outline-text-4" id="text-1-3-1">
 <ul class="org-ul">
 <li><p>
 Troubleshoot this kind of error:
 </p>
-<pre class="example" id="orgf828fe0">
+<pre class="example" id="org7621dd0">
 fatal: Must specify at least one workload!
 </pre></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org92c8395" class="outline-4">
-<h4 id="org92c8395"><span class="section-number-4">1.3.2</span> <b>Explanation</b></h4>
+<div id="outline-container-org2020587" class="outline-4">
+<h4 id="org2020587"><span class="section-number-4">1.3.2</span> Explanation</h4>
 <div class="outline-text-4" id="text-1-3-2">
 <ul class="org-ul">
 <li>This error is generated in the <i>C++</i> source code of <i>gem5</i>, by its error
@@ -521,8 +521,8 @@ handling mechanism.</li>
 </div>
 </div>
 
-<div id="outline-container-orgd899ce0" class="outline-4">
-<h4 id="orgd899ce0"><span class="section-number-4">1.3.3</span> <b>Resolution</b></h4>
+<div id="outline-container-org573023f" class="outline-4">
+<h4 id="org573023f"><span class="section-number-4">1.3.3</span> Resolution</h4>
 <div class="outline-text-4" id="text-1-3-3">
 <ul class="org-ul">
 <li><p>
@@ -582,26 +582,26 @@ variable of the <code>Root</code> object.</li>
 </div>
 </div>
 
-<div id="outline-container-orge766941" class="outline-3">
-<h3 id="orge766941"><span class="section-number-3">1.4</span> panic: XXX port of XXX not connected to anything!</h3>
+<div id="outline-container-orga31a631" class="outline-3">
+<h3 id="orga31a631"><span class="section-number-3">1.4</span> panic: XXX port of XXX not connected to anything!</h3>
 <div class="outline-text-3" id="text-1-4">
 </div>
-<div id="outline-container-orge6377c0" class="outline-4">
-<h4 id="orge6377c0"><span class="section-number-4">1.4.1</span> <b>Goal</b></h4>
+<div id="outline-container-org3335e0c" class="outline-4">
+<h4 id="org3335e0c"><span class="section-number-4">1.4.1</span> Goal</h4>
 <div class="outline-text-4" id="text-1-4-1">
 <ul class="org-ul">
 <li><p>
 Troubleshoot this kind of error:
 </p>
-<pre class="example" id="org99e87ac">
+<pre class="example" id="orge41b0d0">
 panic: Pio port of system.realview.generic_timer_mem not connected to anything!
 </pre></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgf0fc469" class="outline-4">
-<h4 id="orgf0fc469"><span class="section-number-4">1.4.2</span> <b>Explanation</b></h4>
+<div id="outline-container-org06f7451" class="outline-4">
+<h4 id="org06f7451"><span class="section-number-4">1.4.2</span> Explanation</h4>
 <div class="outline-text-4" id="text-1-4-2">
 <ul class="org-ul">
 <li>This error is generated in the <i>C++</i> source code of <i>gem5</i>, by its error
@@ -612,8 +612,8 @@ programmed or forgotten.</li>
 </div>
 </div>
 
-<div id="outline-container-orge8432cf" class="outline-4">
-<h4 id="orge8432cf"><span class="section-number-4">1.4.3</span> <b>Resolution</b></h4>
+<div id="outline-container-org4543e51" class="outline-4">
+<h4 id="org4543e51"><span class="section-number-4">1.4.3</span> Resolution</h4>
 <div class="outline-text-4" id="text-1-4-3">
 <ul class="org-ul">
 <li>The linkage of this port should perhaps have been done directly by you,
@@ -629,18 +629,18 @@ give a graphical representation of the system (with links between
 </div>
 </div>
 
-<div id="outline-container-org305b67b" class="outline-3">
-<h3 id="org305b67b"><span class="section-number-3">1.5</span> Kernel panic - not syncing: VFS: Unable to mount root fs</h3>
+<div id="outline-container-org994046a" class="outline-3">
+<h3 id="org994046a"><span class="section-number-3">1.5</span> Kernel panic - not syncing: VFS: Unable to mount root fs</h3>
 <div class="outline-text-3" id="text-1-5">
 </div>
-<div id="outline-container-orgef1c2ae" class="outline-4">
-<h4 id="orgef1c2ae"><span class="section-number-4">1.5.1</span> <b>Goal</b></h4>
+<div id="outline-container-orgf700fc7" class="outline-4">
+<h4 id="orgf700fc7"><span class="section-number-4">1.5.1</span> Goal</h4>
 <div class="outline-text-4" id="text-1-5-1">
 <ul class="org-ul">
 <li><p>
 Troubleshoot this <i>kernel panic</i>:
 </p>
-<pre class="example" id="org7d200c5">
+<pre class="example" id="org017b528">
 [    0.224367] List of all partitions:
 [    0.224394] fe00         1048320 vda 
 [    0.224397]  driver: virtio_blk
@@ -678,8 +678,8 @@ Troubleshoot this <i>kernel panic</i>:
 </div>
 </div>
 
-<div id="outline-container-org42106db" class="outline-4">
-<h4 id="org42106db"><span class="section-number-4">1.5.2</span> <b>Explanation</b></h4>
+<div id="outline-container-org6431177" class="outline-4">
+<h4 id="org6431177"><span class="section-number-4">1.5.2</span> Explanation</h4>
 <div class="outline-text-4" id="text-1-5-2">
 <ul class="org-ul">
 <li>This error is generated by the <i>Linux</i> kernel, in a
@@ -696,8 +696,8 @@ systems are correctly loaded.</li>
 </div>
 </div>
 
-<div id="outline-container-org9b939af" class="outline-4">
-<h4 id="org9b939af"><span class="section-number-4">1.5.3</span> <b>Resolution</b></h4>
+<div id="outline-container-org9cf7ab1" class="outline-4">
+<h4 id="org9cf7ab1"><span class="section-number-4">1.5.3</span> Resolution</h4>
 <div class="outline-text-4" id="text-1-5-3">
 <ul class="org-ul">
 <li><p>
@@ -728,7 +728,7 @@ device.</li>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-03-31 mer. 11:14</p>
+<p class="date">Created: 2021-03-31 mer. 11:23</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
