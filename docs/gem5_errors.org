@@ -10,3 +10,318 @@
   This guide reference some gem5 errors that we had to solve during our
   development. This is far from a complete list, but still, it might help
   someone.
+
+** AttributeError: Can't resolve proxy 'any' of type 'XXX' from 'XXX'
+
+*** *Goal*
+
+    - This is the error we will troubleshoot:
+      #+BEGIN_EXAMPLE
+      AttributeError: Can't resolve proxy 'any' of type 'ArmSystem' from 'system.realview.generic_timer'
+      #+END_EXAMPLE
+
+*** *Explanation*
+
+    - The /proxy parameter/ in /gem5/ is a /Python/ helper mechanism which is
+      used to handle, affect and verify parameters of =SimObject=. It's
+      implemented in the =Gem5/src/python/m5/proxy.py= file.
+    - A /special proxy paramater/ is a /proxy parameter/ which have a dedicated
+      class into the =proxy.py= file. Consider this /special proxy parameter/
+      (=Parent.any=):
+      #+BEGIN_SRC python :eval never
+      system = Param.System(Parent.any, "The system the object is part of")
+      #+END_SRC
+      - This is its special implementation:
+      #+BEGIN_SRC python :eval never
+      class AnyProxy(BaseProxy):
+          def find(self, obj):
+              return obj.find_any(self._pdesc.ptype)
+
+          def path(self):
+              return 'any'
+      #+END_SRC
+      - And that's mean "We will affect to the =system= attribute of the
+        current object any object of type =System= find into the parent
+        object". It allow to affect a precise type of variable without knowing
+        it's name in the parent object.
+
+*** *Resolution*
+
+    - To resolve our problem, we have to find the /special proxy parameter/:
+      - =system= inherit from =System= class (=System.py=) ;
+      - =system.realview= is of =VExpress_GEM5_V1= class (=RealView.py=) ;
+      - =system.realview.generic_timer= is of =GenericTimer= class (=GenericTimer.py=).
+    - In the =GenericTimer= class, we can find the /special proxy parameter/
+      mentioned in the message:
+      #+BEGIN_SRC python :eval never
+      system = Param.ArmSystem(Parent.any, "system")
+      #+END_SRC
+    - This parameter search for an =ArmSystem= in the parent (=VExpress_GEM5_V1=).
+    - The =VExpress_GEM5_V1= class has a =system= attribute which is our
+      =system= object here.
+    - Therefore, our =GenericTimer= will find a =System= object but not the
+      specialized =ArmSystem= object, which produce the error of matching
+      type.
+    - Finally, to resolve the /proxy/ error, we have to change our =system=
+      object to an =ArmSystem= object, or an object which inherit or the
+      =ArmSystem=.
+
+** gem5 has encountered a segmentation fault!
+
+*** *Goal*
+
+    - Troubleshoot this kind of, is not understand, cryptic error:
+      #+BEGIN_EXAMPLE
+      gem5 has encountered a segmentation fault!
+
+      --- BEGIN LIBC BACKTRACE ---
+      /opt/Gem5/build/ARM/gem5.opt(+0xd14cc9)[0x5579a2c41cc9]
+      /opt/Gem5/build/ARM/gem5.opt(+0xd2781f)[0x5579a2c5481f]
+      /lib/x86_64-linux-gnu/libpthread.so.0(+0x14140)[0x7f766cdc8140]
+      /opt/Gem5/build/ARM/gem5.opt(+0x134d5d4)[0x5579a327a5d4]
+      /opt/Gem5/build/ARM/gem5.opt(+0x13504f2)[0x5579a327d4f2]
+      /opt/Gem5/build/ARM/gem5.opt(+0x9b3a8f)[0x5579a28e0a8f]
+      /opt/Gem5/build/ARM/gem5.opt(+0x586ebe)[0x5579a24b3ebe]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0xa1a78)[0x7f766ce77a78]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyObject_MakeTpCall+0xa7)[0x7f766ce78817]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0xa37d0)[0x7f766ce797d0]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x7dc4d)[0x7f766ce53c4d]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x7639)[0x7f766ce518f9]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x73073)[0x7f766ce49073]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0xa379a)[0x7f766ce7979a]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x7dc4d)[0x7f766ce53c4d]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x7639)[0x7f766ce518f9]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x73073)[0x7f766ce49073]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0xa379a)[0x7f766ce7979a]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x7dc4d)[0x7f766ce53c4d]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x7639)[0x7f766ce518f9]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x73073)[0x7f766ce49073]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x7dc4d)[0x7f766ce53c4d]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x7639)[0x7f766ce518f9]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x73073)[0x7f766ce49073]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x7dc4d)[0x7f766ce53c4d]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalFrameDefault+0x1292)[0x7f766ce4b552]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(_PyEval_EvalCodeWithName+0x8df)[0x7f766cf50ebf]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(PyEval_EvalCodeEx+0x3e)[0x7f766cf5125e]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(PyEval_EvalCode+0x1b)[0x7f766cf4faab]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x175531)[0x7f766cf4b531]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0xe60a3)[0x7f766cebc0a3]
+      /lib/x86_64-linux-gnu/libpython3.8.so.1.0(+0x7dc4d)[0x7f766ce53c4d]
+      --- END LIBC BACKTRACE ---
+      #+END_EXAMPLE
+
+*** *Explanation*
+
+    - Arrive often with a =NULL= pointer which is dereferenced in /gem5/, caused by:
+      - A parameter that is asserted to be set, but in fact, it is not.
+      - A port that this asserted to be linked, but in fact, it is not.
+
+*** *Resolution*
+
+    - Best thing is to use /gdb/ here.
+    - Ideally, you should use the =gem5.debug= binary:
+
+      #+BEGIN_SRC bash :eval never
+      gdb $GEM5/build/ARM/gem5.opt
+      run --debug-break=2000 -d /tmp $GEM5_SCRIPTS/RPIv4.py -v --fs --fs-kernel=$gem5_kernel --fs-disk-image=$gem5_disk
+      #+END_SRC
+
+    - Use trial and error to refine your =--debug-break= tick start to arrive
+      where you want to go.
+    - At some point, you will arrive at your segfault:
+
+      #+BEGIN_EXAMPLE
+      Program received signal SIGSEGV, Segmentation fault.
+      0x00005555568a15d4 in ArmSystem::ArmSystem (this=0x5555595cfb00, p=0x555558cba1a0) at build/ARM/arch/arm/system.cc:77
+      77	        _resetAddr = workload->getEntry();
+      #+END_EXAMPLE
+      #+BEGIN_EXAMPLE
+      $rsp   : 0x00007fffffffc6c0  →  0x00007ffff50c6398  →  0x0000000000000000
+      $rbp   : 0x00005555595cfb00  →  0x0000555557e10020  →  0x0000555556d1fd70  →  <ArmSystem::~ArmSystem()+0> lea rax, [rip+0x10f02a9]        # 0x555557e10020 <_ZTV9ArmSystem+16>
+      $rsi   : 0x0000555557f3e0a0  →  0x0000555558f53140  →  0x0000555558f53120  →  0x000055555961c540  →  0x000055555961c560  →  0x000055555961c580  →  0x000055555961c5a0  →  0x000055555961c5c0
+      $rdi   : 0x0               
+      $rip   : 0x00005555568a15d4  →  <ArmSystem::ArmSystem(ArmSystemParams*)+276> mov rax, QWORD PTR [rdi]
+      #+END_EXAMPLE
+      #+BEGIN_EXAMPLE
+         0x5555568a15c4 <ArmSystem::ArmSystem(ArmSystemParams*)+260> cmp    BYTE PTR [rbx+0x144], 0x0
+         0x5555568a15cb <ArmSystem::ArmSystem(ArmSystemParams*)+267> je     0x5555568a1648 <ArmSystem::ArmSystem(ArmSystemParams*)+392>
+         0x5555568a15cd <ArmSystem::ArmSystem(ArmSystemParams*)+269> mov    rdi, QWORD PTR [rbp+0x190]
+       → 0x5555568a15d4 <ArmSystem::ArmSystem(ArmSystemParams*)+276> mov    rax, QWORD PTR [rdi]
+      #+END_EXAMPLE
+      #+BEGIN_EXAMPLE
+           72	       _havePAN(p->have_pan),
+           73	       semihosting(p->semihosting),
+           74	       multiProc(p->multi_proc)
+           75	 {
+           76	     if (p->auto_reset_addr) {
+       →   77	         _resetAddr = workload->getEntry();
+      #+END_EXAMPLE
+
+    - We have find the source of the =SEFGAULT=:
+      - =workload->getEntry();= dereference =workload= pointer to call the =getEntry()= function.
+      - =mov    rax, QWORD PTR [rdi]= is the pointer dereference in assembly.
+      - =rdi= is set to =0x0=.
+      - This lead to the segmentation fault. Hence, our workload is not well
+        passed to our =ArmSystem= object. In fact, our workload was linked at
+        the wrong =SimObject= by inadvertence.
+
+** fatal: XXX
+
+*** *Goal*
+
+    - Troubleshoot this kind of error:
+      #+BEGIN_EXAMPLE
+      fatal: Must specify at least one workload!
+      #+END_EXAMPLE
+
+*** *Explanation*
+
+    - This error is generated in the /C++/ source code of /gem5/, by its error
+      handling mechanism.
+
+*** *Resolution*
+
+    - Best thing is to search for the error (without the error-level
+      keyword) in the source code:
+      #+BEGIN_SRC bash :results output :exports both
+      ack "Must specify at least one workload" $GEM5/src
+      #+END_SRC
+
+      #+RESULTS:
+      : /opt/Gem5/src/cpu/o3/deriv.cc:47:            fatal("Must specify at least one workload!");
+       
+    - We can then search, in the source code, the source of the error:
+      #+BEGIN_SRC bash :results output :wrap "SRC C :eval never" :exports both
+      sed -n '35,54'p /opt/Gem5/src/cpu/o3/deriv.cc
+      #+END_SRC
+
+      #+RESULTS:
+      #+begin_SRC C :eval never
+      DerivO3CPU *
+      DerivO3CPUParams::create()
+      {
+          ThreadID actual_num_threads;
+          if (FullSystem) {
+              // Full-system only supports a single thread for the moment.
+              actual_num_threads = 1;
+          } else {
+              if (workload.size() > numThreads) {
+                  fatal("Workload Size (%i) > Max Supported Threads (%i) on This CPU",
+                        workload.size(), numThreads);
+              } else if (workload.size() == 0) {
+                  fatal("Must specify at least one workload!");
+              }
+
+              // In non-full-system mode, we infer the number of threads from
+              // the workload if it's not explicitly specified.
+              actual_num_threads =
+                  (numThreads >= workload.size()) ? numThreads : workload.size();
+          }
+      #+end_SRC
+
+    - Here, we can understand that the =O3CPU= take the first =else= path,
+      when he should have take the first =if= (because we are in /FS/
+      mode). Then, the /CPU/ search for a workload linked on it, but there is
+      not because, again, we are in /FS/ mode, therefore producing the fatal
+      error.
+    - To fix this particular error, you have to set =full_system=True=
+      variable of the =Root= object.
+
+** panic: XXX port of XXX not connected to anything!
+
+*** *Goal*
+
+    - Troubleshoot this kind of error:
+      #+BEGIN_EXAMPLE
+      panic: Pio port of system.realview.generic_timer_mem not connected to anything!
+      #+END_EXAMPLE
+
+*** *Explanation*
+
+    - This error is generated in the /C++/ source code of /gem5/, by its error
+      handling mechanism.
+    - The reason is clear: the setup of one /SimObject/'s ports is badly
+      programmed or forgotten.
+
+*** *Resolution*
+
+    - The linkage of this port should perhaps have been done directly by you,
+      or by an helper function already provided by /gem5/.
+    - To distinguish between these two ways, search in the source code the
+      concerned object (here, =system.realview.generic_timer_mem=). Understand
+      its function, its ports, and so one.
+    - One thing that can help a lot is the generated =config.dot.pdf=, which
+      give a graphical representation of the system (with links between
+      /SimObject/).
+
+** Kernel panic - not syncing: VFS: Unable to mount root fs
+
+*** *Goal*
+
+    - Troubleshoot this /kernel panic/:
+      #+BEGIN_EXAMPLE
+      [    0.224367] List of all partitions:
+      [    0.224394] fe00         1048320 vda 
+      [    0.224397]  driver: virtio_blk
+      [    0.224440]   fe01         1048288 vda1 00000000-01
+      [    0.224441] 
+      [    0.224480] No filesystem could mount root, tried: 
+      [    0.224481]  ext3
+      [    0.224510]  ext4
+      [    0.224524]  ext2
+      [    0.224537]  squashfs
+      [    0.224551]  vfat
+      [    0.224566]  fuseblk
+      [    0.224579] 
+      [    0.224606] Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(254,0)
+      [    0.224656] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.18.0+ #1
+      [    0.224692] Hardware name: V2P-CA15 (DT)
+      [    0.224717] Call trace:
+      [    0.224741]  dump_backtrace+0x0/0x1c0
+      [    0.224765]  show_stack+0x14/0x20
+      [    0.224790]  dump_stack+0x8c/0xac
+      [    0.224812]  panic+0x130/0x288
+      [    0.224836]  mount_block_root+0x22c/0x294
+      [    0.224861]  mount_root+0x140/0x174
+      [    0.224884]  prepare_namespace+0x138/0x180
+      [    0.224910]  kernel_init_freeable+0x1c0/0x1e0
+      [    0.224939]  kernel_init+0x10/0x108
+      [    0.224961]  ret_from_fork+0x10/0x18
+      [    0.224987] Kernel Offset: disabled
+      [    0.225009] CPU features: 0x21c06492
+      [    0.225032] Memory Limit: 2048 MB
+      [    0.225056] ---[ end Kernel panic - not syncing: VFS: Unable to mount root fs on unknown-block(254,0) ]---
+
+      #+END_EXAMPLE
+
+*** *Explanation*
+
+    - This error is generated by the /Linux/ kernel, in a
+      full-system-emulation setup.
+    - We can see, from the error:
+      - The kernel recognize the /VirtIO/ block device, which means that this
+        driver is correctly loaded.
+      - The kernel tried the =ext= file system, which means that the file
+        systems are correctly loaded.
+      - The kernel detect a =vda1= partition.
+
+*** *Resolution*
+
+    - The problem lying into the *specification of the root partition*, on the
+      *kernel command line*. In the full-system emulation script, we have to
+      correctly set the root partition, like this:
+      #+BEGIN_SRC python :eval never
+      # Linux kernel boot command flags.
+      kernel_cmd = [
+          ...
+          # Tell Linux where to find the root disk image.
+          "root=/dev/vda1",
+          ...
+      ]
+      system.workload.command_line = " ".join(kernel_cmd)
+      #+END_SRC
+    - Don't forget to replace =...= with other correct options.
+    - Before our modification, the /VirtIO/ block device was specified
+      (=/dev/vda=). The kernel wants a partition (=/dev/vda1=), not a block
+      device.
+  
