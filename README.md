@@ -13,7 +13,7 @@ page](https://pierreay.github.io/reproduce-spectre-gem5/) of the repository.
 
 The repository is still under construction!
 
-- `docs` contains the official paper and associated web pages.
+- `docs` contains the official paper, master thesis and associated web pages.
 - `gem5` contains Python files that are used to work with gem5's simulations.
 - `spectre` contains our Spectre attack implementation for ARM.
 - `README.md` is the current instructions.
