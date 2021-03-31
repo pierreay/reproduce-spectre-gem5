@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-03-30 mar. 18:52 -->
+<!-- 2021-03-31 mer. 12:41 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
@@ -224,34 +224,40 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orge77281f">1. Introduction</a></li>
-<li><a href="#orga02aa16">2. Repository</a></li>
-<li><a href="#org9d8d2c0">3. HowTo &#x2026;</a>
+<li><a href="#orgea7a094">1. Introduction</a></li>
+<li><a href="#orga9726a1">2. Repository</a></li>
+<li><a href="#orgba0d3e3">3. HowTo</a>
 <ul>
 <li><a href="#howto_spectre">3.1. How to Perform the Spectre Attack</a></li>
 <li><a href="#howto_gem5">3.2. How to Simulate Spectre with gem5</a></li>
 <li><a href="#howto_konata">3.3. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#org846ab2d">4. Implementations</a>
+<li><a href="#org9419b5c">4. Implementations</a>
 <ul>
-<li><a href="#org67a9a20">4.1. Spectre</a></li>
-<li><a href="#org492f735">4.2. gem5</a></li>
+<li><a href="#orgc29b5d5">4.1. Spectre</a></li>
+<li><a href="#org9fd6e57">4.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#orgc1ba336">5. Appendices</a></li>
+<li><a href="#org0de5527">5. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orge77281f" class="outline-2">
-<h2 id="orge77281f"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orgea7a094" class="outline-2">
+<h2 id="orgea7a094"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
-This web page will guide you through the reproduction of the experiments, the
-usage of our implementations or through the demonstration of some techniques
-discussed in the paper. You can navigate with the Table of Content, or
-directly click below to:
+This web page is linked to the <i><a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf">Reproducing Spectre Attack with gem5, How To
+Do It Right?</a></i> paper, as well with the <i><a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/report.pdf">Simulating Transient Execution Attacks
+with gem5</a></i> master thesis.
+</p>
+
+<p>
+It will guide you through the reproduction of the experiments, the usage of
+our implementations or through the demonstration of some techniques discussed
+in the paper. You can navigate with the table of content, or directly click
+below to:
 </p>
 <ul class="org-ul">
 <li><a href="#howto_spectre">Learn how to perform a Spectre attack with our implementation</a></li>
@@ -261,8 +267,8 @@ directly click below to:
 </div>
 </div>
 
-<div id="outline-container-orga02aa16" class="outline-2">
-<h2 id="orga02aa16"><span class="section-number-2">2</span> Repository</h2>
+<div id="outline-container-orga9726a1" class="outline-2">
+<h2 id="orga9726a1"><span class="section-number-2">2</span> Repository</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This web page is part of the repository located <a href="https://github.com/pierreay/reproduce-spectre-gem5">here</a>. See the <code>README.md</code>
@@ -271,13 +277,99 @@ file for repository organization and navigation.
 </div>
 </div>
 
-<div id="outline-container-org9d8d2c0" class="outline-2">
-<h2 id="org9d8d2c0"><span class="section-number-2">3</span> HowTo &#x2026;</h2>
+<div id="outline-container-orgba0d3e3" class="outline-2">
+<h2 id="orgba0d3e3"><span class="section-number-2">3</span> HowTo</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-howto_spectre" class="outline-3">
 <h3 id="howto_spectre"><span class="section-number-3">3.1</span> How to Perform the Spectre Attack</h3>
 <div class="outline-text-3" id="text-howto_spectre">
+<p>
+We assume that you cloned the repository on an ARM system, like a Raspberry
+Pi.
+</p>
+
+<p>
+Simply use the <code>Makefile</code> to compile our implementation:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> spectre
+make
+</pre>
+</div>
+
+<p>
+Test if the binary is working by displaying an useful help message:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">./spectre --help
+</pre>
+</div>
+
+<pre class="example" id="orge992b43">
+Usage: spectre [OPTION...]
+Spectre -- A Spectre implementation useful for research
+
+  -c, --cache_threshold=NUMBER   Cache threshold separating hit and miss
+                             (default: automatically computed)
+  -l, --loops=NUMBER         Number of loops (training and attack) per attempts
+                             (default: 30)
+  -m, --meta=NUMBER          Number of meta-repetition of Spectre (default: 1)
+  -q, -s, --quiet, --silent  Don't produce the header for csv
+  -t, --tries=NUMBER         Number of attempts to guess a secret byte
+                             (default: 999)
+  -v, --verbose              Produce verbose output
+  -?, --help                 Give this help list
+      --usage                Give a short usage message
+  -V, --version              Print program version
+
+Mandatory or optional arguments to long options are also mandatory or optional
+for any corresponding short options.
+
+Report bugs to &lt;pierre.ayoub@irisa.fr&gt;.
+</pre>
+
+<p>
+And test the attack with default parameters like this:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">./spectre 
+</pre>
+</div>
+
+<p>
+If it works correctly, you surely want to generate the metrics as we do in
+the paper and customize some parameters. To do so, we use this loop for
+repeating runs. We first launch one experiment, and relaunch the others
+with the <code>-q</code> flag to suppress header line:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #697375;"># </span><span style="color: #697375;">Parameters.</span>
+<span style="color: #47ba99;">runs</span>=<span style="color: #ef6787;">50</span> <span style="color: #697375;"># </span><span style="color: #697375;">Number of runs - 1.</span>
+<span style="color: #47ba99;">m</span>=<span style="color: #ef6787;">10</span>    <span style="color: #697375;"># </span><span style="color: #697375;">Number of meta repetition in the binary itself.</span>
+<span style="color: #47ba99;">t</span>=<span style="color: #ef6787;">999</span>   <span style="color: #697375;"># </span><span style="color: #697375;">Number of attempts to guess one byte.</span>
+<span style="color: #47ba99;">l</span>=<span style="color: #ef6787;">100</span>   <span style="color: #697375;"># </span><span style="color: #697375;">Number of loop per attempt.</span>
+<span style="color: #697375;"># </span><span style="color: #697375;">Runs.</span>
+./spectre/spectre -m $<span style="color: #47ba99;">m</span> -l $<span style="color: #47ba99;">l</span> -t $<span style="color: #47ba99;">t</span>
+<span style="color: #4EB8CA;">for</span> <span style="color: #4EB8CA;">(</span><span style="color: #91b9c7;">(</span> <span style="color: #47ba99;">i</span> = <span style="color: #ef6787;">1</span>; i &lt; $<span style="color: #47ba99;">runs</span>; i++ <span style="color: #91b9c7;">)</span><span style="color: #4EB8CA;">)</span>
+<span style="color: #4EB8CA;">do</span>  
+    ./spectre/spectre -q -m $<span style="color: #47ba99;">m</span> -l $<span style="color: #47ba99;">l</span> -t $<span style="color: #47ba99;">t</span>   
+<span style="color: #4EB8CA;">done</span>
+</pre>
+</div>
+
+<p>
+Important note:
+</p>
+<ul class="org-ul">
+<li>There is a <code>TODO</code> item in the <code>perf.c</code> file that requires a manual
+intervention to use <code>perf_event</code> either on a native ARM system or on a
+gem5's simulated ARM system.</li>
+</ul>
 </div>
 </div>
 
@@ -294,25 +386,67 @@ file for repository organization and navigation.
 </div>
 </div>
 
-<div id="outline-container-org846ab2d" class="outline-2">
-<h2 id="org846ab2d"><span class="section-number-2">4</span> Implementations</h2>
+<div id="outline-container-org9419b5c" class="outline-2">
+<h2 id="org9419b5c"><span class="section-number-2">4</span> Implementations</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Implementation details goes here.
 </p>
 </div>
 
-<div id="outline-container-org67a9a20" class="outline-3">
-<h3 id="org67a9a20"><span class="section-number-3">4.1</span> Spectre</h3>
+<div id="outline-container-orgc29b5d5" class="outline-3">
+<h3 id="orgc29b5d5"><span class="section-number-3">4.1</span> Spectre</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+Our implementation resides in the <code>spectre</code> directory of the repository:
+</p>
+
+<pre class="example" id="org84fe805">
+spectre
+├── asm.c
+├── asm.h
+├── main.c
+├── Makefile
+├── perf.c
+├── perf.h
+├── spectre_pht_sa_ip.c
+├── spectre_pht_sa_ip.h
+├── util.c
+└── util.h
+
+0 directories, 10 files
+</pre>
+
+<p>
+It is composed of the following modules:
+</p>
+<dl class="org-dl">
+<dt><code>asm</code></dt><dd>ARM assembly implementation.</dd>
+<dt><code>main</code></dt><dd>Orchestrate all the modules.</dd>
+<dt><code>perf</code></dt><dd><code>perf_event</code> wrapper.</dd>
+<dt><code>spectre_pht_sa_ip</code></dt><dd>Spectre implementation (for the PHT-SA-IP
+version).</dd>
+<dt>util</dt><dd>Useful functions used across the binary.</dd>
+</dl>
+
+<p>
+Note that:
+</p>
+<ul class="org-ul">
+<li>There is a lot of comments into the code, don't hesitate to look at it to
+understands specific parts of the Spectre attack or the assembly
+instructions.</li>
+</ul>
+</div>
 </div>
 
-<div id="outline-container-org492f735" class="outline-3">
-<h3 id="org492f735"><span class="section-number-3">4.2</span> gem5</h3>
+<div id="outline-container-org9fd6e57" class="outline-3">
+<h3 id="org9fd6e57"><span class="section-number-3">4.2</span> gem5</h3>
 </div>
 </div>
 
-<div id="outline-container-orgc1ba336" class="outline-2">
-<h2 id="orgc1ba336"><span class="section-number-2">5</span> Appendices</h2>
+<div id="outline-container-org0de5527" class="outline-2">
+<h2 id="org0de5527"><span class="section-number-2">5</span> Appendices</h2>
 <div class="outline-text-2" id="text-5">
 <ul class="org-ul">
 <li>If you are a gem5 user who experience some unresolved errors, you could see
@@ -323,7 +457,7 @@ the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html"
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-03-30 mar. 18:52</p>
+<p class="date">Created: 2021-03-31 mer. 12:41</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

@@ -24,13 +24,82 @@
   This web page is part of the repository located [[https://github.com/pierreay/reproduce-spectre-gem5][here]]. See the =README.md=
   file for repository organization and navigation.
 
-* HowTo ...
+* HowTo
   
 ** How to Perform the Spectre Attack
    :PROPERTIES:
    :CUSTOM_ID: howto_spectre
    :END:
 
+   We assume that you cloned the repository on an ARM system, like a Raspberry
+   Pi.
+
+   Simply use the =Makefile= to compile our implementation:
+    
+   #+BEGIN_SRC bash :eval never
+   cd spectre
+   make
+   #+END_SRC
+
+   Test if the binary is working by displaying an useful help message:
+
+   #+BEGIN_SRC bash :eval never
+   ./spectre --help
+   #+END_SRC
+
+   #+BEGIN_EXAMPLE
+   Usage: spectre [OPTION...]
+   Spectre -- A Spectre implementation useful for research
+
+     -c, --cache_threshold=NUMBER   Cache threshold separating hit and miss
+                                (default: automatically computed)
+     -l, --loops=NUMBER         Number of loops (training and attack) per attempts
+                                (default: 30)
+     -m, --meta=NUMBER          Number of meta-repetition of Spectre (default: 1)
+     -q, -s, --quiet, --silent  Don't produce the header for csv
+     -t, --tries=NUMBER         Number of attempts to guess a secret byte
+                                (default: 999)
+     -v, --verbose              Produce verbose output
+     -?, --help                 Give this help list
+         --usage                Give a short usage message
+     -V, --version              Print program version
+
+   Mandatory or optional arguments to long options are also mandatory or optional
+   for any corresponding short options.
+
+   Report bugs to <pierre.ayoub@irisa.fr>.
+   #+END_EXAMPLE
+    
+   And test the attack with default parameters like this:
+
+   #+BEGIN_SRC bash :eval never
+   ./spectre 
+   #+END_SRC
+
+   If it works correctly, you surely want to generate the metrics as we do in
+   the paper and customize some parameters. To do so, we use this loop for
+   repeating runs. We first launch one experiment, and relaunch the others
+   with the =-q= flag to suppress header line:
+
+   #+BEGIN_SRC bash :eval never
+   # Parameters.
+   runs=50 # Number of runs - 1.
+   m=10    # Number of meta repetition in the binary itself.
+   t=999   # Number of attempts to guess one byte.
+   l=100   # Number of loop per attempt.
+   # Runs.
+   ./spectre/spectre -m $m -l $l -t $t
+   for (( i = 1; i < $runs; i++ ))
+   do  
+       ./spectre/spectre -q -m $m -l $l -t $t   
+   done
+   #+END_SRC
+
+   Important note:
+   - There is a =TODO= item in the =perf.c= file that requires a manual
+     intervention to use =perf_event= either on a native ARM system or on a
+     gem5's simulated ARM system.
+    
 ** How to Simulate Spectre with gem5
    :PROPERTIES:
    :CUSTOM_ID: howto_gem5
@@ -46,6 +115,42 @@
   Implementation details goes here.
 
 ** Spectre
+   
+   Our implementation resides in the =spectre= directory of the repository:
+
+   #+BEGIN_SRC bash :dir ../ :results output :exports results
+   tree spectre
+   #+END_SRC
+
+   #+RESULTS:
+   #+begin_example
+   spectre
+   ├── asm.c
+   ├── asm.h
+   ├── main.c
+   ├── Makefile
+   ├── perf.c
+   ├── perf.h
+   ├── spectre_pht_sa_ip.c
+   ├── spectre_pht_sa_ip.h
+   ├── util.c
+   └── util.h
+
+   0 directories, 10 files
+   #+end_example
+
+   It is composed of the following modules:
+   - =asm= :: ARM assembly implementation.
+   - =main= :: Orchestrate all the modules.
+   - =perf= :: =perf_event= wrapper.
+   - =spectre_pht_sa_ip= :: Spectre implementation (for the PHT-SA-IP
+     version).
+   - util :: Useful functions used across the binary.
+
+   Note that:
+   - There is a lot of comments into the code, don't hesitate to look at it to
+     understands specific parts of the Spectre attack or the assembly
+     instructions.
 
 ** gem5
    
