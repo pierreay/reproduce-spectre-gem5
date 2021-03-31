@@ -10,7 +10,7 @@ page](https://pierreay.github.io/reproduce-spectre-gem5/) of the repository.
 
 # Organization
 
-Repository is still under construction!
+The repository is still under construction!
 
 - `docs` contains the official web pages.
 - `gem5` contains Python files that are used to work with gem5's simulations.
