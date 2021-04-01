@@ -205,7 +205,7 @@
     }
    #+END_SRC
     
-** How to Setup gem5
+** How to Setup gem5 for a Full-System Simulation
 
    To reproduce this work, you will need:
    - A working [[https://www.gem5.org/getting_started/][gem5]] installation. We used gem5 v20.0.
@@ -219,7 +219,7 @@
      adapt our work to this new version, and the results may not be the same.
    - Reproduce exactly what we did, with a bit of tinkering.
 
-   First, install the recommendedg packages:
+   First, install the recommended packages:
 
    #+BEGIN_SRC bash :eval never
    sudo apt install build-essential git m4 scons zlib1g zlib1g-dev \
@@ -251,7 +251,7 @@
    scons PYTHON_CONFIG=python$py_version-config build/$arch/gem5.$mode -j $cores
    #+END_SRC
 
-    If everything is working, we should be able to display the help of one
+    If everything is working, you should be able to display the help of one
     simulation script:
 
     #+BEGIN_SRC bash :eval never
@@ -261,8 +261,82 @@
     Otherwise, check the [[https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#compilation][=docs/gem5_errors.html=]] file to see if the compilation
     error has already been encountered.
     
-    Let's create the images we need to simulate Spectre on a full-system
-    simulation:
+    Let's create the images you need to perform a full-system
+    simulation. First, you have to download the operating system and the kernel
+    images that you will use over our simulated hardware:
+
+    #+BEGIN_SRC bash :eval never
+    img_dir=img
+    mkdir $img_dir && cd $img_dir
+    # OS
+    wget -O - http://dist.gem5.org/dist/current/arm/disks/linaro-minimal-aarch64.img.bz2 | bunzip2 > linaro-minimal-aarch64.img
+    # Kernel
+    wget -O - http://dist.gem5.org/dist/current/arm/aarch-system-201901106.tar.bz2 | tar xjv
+    #+END_SRC
+
+    Then, you will have to create a third =workload.img= image that will
+    contain the file(s) that you want to use in your experiments. In order to
+    do that, first create a 100MB zero file (you can change the size with the
+    =count= parameter):
+
+    #+BEGIN_SRC bash :eval never
+    img=workload.img
+    dd if=/dev/zero of=$img count=200K
+    #+END_SRC
+
+    Create a loopback device in order to access the image as a block device:
+
+    #+BEGIN_SRC bash :eval never
+    dev=$(sudo losetup -f)
+    sudo losetup -fP $img
+    #+END_SRC
+
+    Create a DOS partition table and a primary partition on the entire image,
+    then format the new created partition with the =ext4= file system:
+
+    #+BEGIN_SRC bash :eval never
+    echo "," | sudo sfdisk $dev
+    sudo mke2fs "$dev"p1
+    #+END_SRC
+    
+    Finally, you are done at modifying your image, detach it from the loopback
+    device:
+
+    #+BEGIN_SRC bash :eval never
+    sudo losetup -d $dev
+    #+END_SRC
+
+    Now, you have a persistent file that will hold your files for the
+    simulation. Define a function that will be used each time you need to
+    update the image with new files (binaries, data...):
+
+    #+BEGIN_SRC bash :eval never
+    # $1: workload image name/path.
+    # $*: list of files to copy.
+    workload_update() {
+        dev=$(sudo losetup -f)
+        mnt=/mnt/workload
+        img="$1"
+        shift
+        # Create the mount folder and the loop device.
+        sudo mkdir -p $mnt
+        sudo losetup -fP "$img"
+        # Mount the block device.
+        sudo mount -o loop $dev $mnt
+        # Copy files/folders.
+        sudo cp -r -f -t $mnt $*
+        # List the files to confirm.
+        ls -alh $mnt
+        # Unmount the image and freed the loop device.
+        sudo umount $mnt
+        sudo losetup -d $dev
+    }
+    #+END_SRC
+
+    We will use this function later. All your 3 images will be mounted directly
+    in the simulated system by gem5 itself, and the files in the workload image
+    will be accessible in read/write. This is an efficient and handy way to
+    communicate with a gem5 simulation.
     
 ** How to Simulate Spectre with gem5
    :PROPERTIES:

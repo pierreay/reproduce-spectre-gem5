@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-04-01 jeu. 13:44 -->
+<!-- 2021-04-01 jeu. 16:51 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
@@ -224,30 +224,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org23e1c2a">1. Introduction</a></li>
-<li><a href="#orgfc21dbe">2. Repository</a></li>
-<li><a href="#org33a2042">3. HowTo</a>
+<li><a href="#org4507070">1. Introduction</a></li>
+<li><a href="#org93a1673">2. Repository</a></li>
+<li><a href="#org4c89cfc">3. HowTo</a>
 <ul>
 <li><a href="#setup_arm">3.1. How to Setup the Native ARM System</a></li>
 <li><a href="#howto_spectre">3.2. How to Perform the Spectre Attack</a></li>
-<li><a href="#orgc1ab0f3">3.3. How to Setup gem5</a></li>
+<li><a href="#orgb21e596">3.3. How to Setup gem5 for a Full-System Simulation</a></li>
 <li><a href="#howto_gem5">3.4. How to Simulate Spectre with gem5</a></li>
 <li><a href="#howto_konata">3.5. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#org41ebb01">4. Implementations</a>
+<li><a href="#orgcce97f4">4. Implementations</a>
 <ul>
-<li><a href="#orgf31f2d9">4.1. Spectre</a></li>
-<li><a href="#org98618e1">4.2. gem5</a></li>
+<li><a href="#org4a53277">4.1. Spectre</a></li>
+<li><a href="#org25efdcb">4.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#org8ef53aa">5. Appendices</a></li>
+<li><a href="#orgb1d4d94">5. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org23e1c2a" class="outline-2">
-<h2 id="org23e1c2a"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-org4507070" class="outline-2">
+<h2 id="org4507070"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This web page is linked to the <i><a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf">Reproducing Spectre Attack with gem5, How To
@@ -269,8 +269,8 @@ below to:
 </div>
 </div>
 
-<div id="outline-container-orgfc21dbe" class="outline-2">
-<h2 id="orgfc21dbe"><span class="section-number-2">2</span> Repository</h2>
+<div id="outline-container-org93a1673" class="outline-2">
+<h2 id="org93a1673"><span class="section-number-2">2</span> Repository</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This web page is part of the repository located <a href="https://github.com/pierreay/reproduce-spectre-gem5">here</a>. See the <code>README.md</code>
@@ -279,8 +279,8 @@ file for repository organization and navigation.
 </div>
 </div>
 
-<div id="outline-container-org33a2042" class="outline-2">
-<h2 id="org33a2042"><span class="section-number-2">3</span> HowTo</h2>
+<div id="outline-container-org4c89cfc" class="outline-2">
+<h2 id="org4c89cfc"><span class="section-number-2">3</span> HowTo</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-setup_arm" class="outline-3">
@@ -392,7 +392,7 @@ Test if the binary is working by displaying a useful help message:
 </pre>
 </div>
 
-<pre class="example" id="orgb97a1b4">
+<pre class="example" id="org5e6fa63">
 Usage: spectre [OPTION...]
 Spectre -- A Spectre implementation useful for research
 
@@ -500,8 +500,8 @@ still a <code>TODO</code> item in the source code):
 </div>
 </div>
 
-<div id="outline-container-orgc1ab0f3" class="outline-3">
-<h3 id="orgc1ab0f3"><span class="section-number-3">3.3</span> How to Setup gem5</h3>
+<div id="outline-container-orgb21e596" class="outline-3">
+<h3 id="orgb21e596"><span class="section-number-3">3.3</span> How to Setup gem5 for a Full-System Simulation</h3>
 <div class="outline-text-3" id="text-3-3">
 <p>
 To reproduce this work, you will need:
@@ -568,7 +568,7 @@ scons <span style="color: #47ba99;">PYTHON_CONFIG</span>=python$<span style="col
 </div>
 
 <p>
-If everything is working, we should be able to display the help of one
+If everything is working, you should be able to display the help of one
 simulation script:
 </p>
 
@@ -583,8 +583,100 @@ error has already been encountered.
 </p>
 
 <p>
-Let's create the images we need to simulate Spectre on a full-system
-simulation:
+Let's create the images you need to perform a full-system
+simulation. First, you have to download the operating system and the kernel
+images that you will use over our simulated hardware:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #47ba99;">img_dir</span>=img
+mkdir $<span style="color: #47ba99;">img_dir</span> &amp;&amp; <span style="color: #91b9c7;">cd</span> $<span style="color: #47ba99;">img_dir</span>
+<span style="color: #697375;"># </span><span style="color: #697375;">OS</span>
+wget -O - http://dist.gem5.org/dist/current/arm/disks/linaro-minimal-aarch64.img.bz2 | bunzip2 &gt; linaro-minimal-aarch64.img
+<span style="color: #697375;"># </span><span style="color: #697375;">Kernel</span>
+wget -O - http://dist.gem5.org/dist/current/arm/aarch-system-201901106.tar.bz2 | tar xjv
+</pre>
+</div>
+
+<p>
+Then, you will have to create a third <code>workload.img</code> image that will
+contain the file(s) that you want to use in your experiments. In order to
+do that, first create a 100MB zero file (you can change the size with the
+<code>count</code> parameter):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #47ba99;">img</span>=workload.img
+dd <span style="color: #47ba99;">if</span>=/dev/zero <span style="color: #47ba99;">of</span>=$<span style="color: #47ba99;">img</span> <span style="color: #47ba99;">count</span>=<span style="color: #ef6787;">200K</span>
+</pre>
+</div>
+
+<p>
+Create a loopback device in order to access the image as a block device:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #47ba99;">dev</span>=$<span style="color: #4EB8CA;">(</span>sudo losetup -f<span style="color: #4EB8CA;">)</span>
+sudo losetup -fP $<span style="color: #47ba99;">img</span>
+</pre>
+</div>
+
+<p>
+Create a DOS partition table and a primary partition on the entire image,
+then format the new created partition with the <code>ext4</code> file system:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #91b9c7;">echo</span> <span style="color: #fbaed2;">","</span> | sudo sfdisk $<span style="color: #47ba99;">dev</span>
+sudo mke2fs <span style="color: #fbaed2;">"$dev"</span>p1
+</pre>
+</div>
+
+<p>
+Finally, you are done at modifying your image, detach it from the loopback
+device:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">sudo losetup -d $<span style="color: #47ba99;">dev</span>
+</pre>
+</div>
+
+<p>
+Now, you have a persistent file that will hold your files for the
+simulation. Define a function that will be used each time you need to
+update the image with new files (binaries, data&#x2026;):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #697375;"># </span><span style="color: #697375;">$1: workload image name/path.</span>
+<span style="color: #697375;"># </span><span style="color: #697375;">$*: list of files to copy.</span>
+<span style="color: #91b9c7;">workload_update</span><span style="color: #4EB8CA;">()</span> <span style="color: #4EB8CA;">{</span>
+    <span style="color: #47ba99;">dev</span>=$<span style="color: #91b9c7;">(</span>sudo losetup -f<span style="color: #91b9c7;">)</span>
+    <span style="color: #47ba99;">mnt</span>=/mnt/workload
+    <span style="color: #47ba99;">img</span>=<span style="color: #fbaed2;">"$1"</span>
+    <span style="color: #91b9c7;">shift</span>
+    <span style="color: #697375;"># </span><span style="color: #697375;">Create the mount folder and the loop device.</span>
+    sudo mkdir -p $<span style="color: #47ba99;">mnt</span>
+    sudo losetup -fP <span style="color: #fbaed2;">"$img"</span>
+    <span style="color: #697375;"># </span><span style="color: #697375;">Mount the block device.</span>
+    sudo mount -o loop $<span style="color: #47ba99;">dev</span> $<span style="color: #47ba99;">mnt</span>
+    <span style="color: #697375;"># </span><span style="color: #697375;">Copy files/folders.</span>
+    sudo cp -r -f -t $<span style="color: #47ba99;">mnt</span> $<span style="color: #47ba99;">*</span>
+    <span style="color: #697375;"># </span><span style="color: #697375;">List the files to confirm.</span>
+    ls -alh $<span style="color: #47ba99;">mnt</span>
+    <span style="color: #697375;"># </span><span style="color: #697375;">Unmount the image and freed the loop device.</span>
+    sudo umount $<span style="color: #47ba99;">mnt</span>
+    sudo losetup -d $<span style="color: #47ba99;">dev</span>
+<span style="color: #4EB8CA;">}</span>
+</pre>
+</div>
+
+<p>
+We will use this function later. All your 3 images will be mounted directly
+in the simulated system by gem5 itself, and the files in the workload image
+will be accessible in read/write. This is an efficient and handy way to
+communicate with a gem5 simulation.
 </p>
 </div>
 </div>
@@ -602,22 +694,22 @@ simulation:
 </div>
 </div>
 
-<div id="outline-container-org41ebb01" class="outline-2">
-<h2 id="org41ebb01"><span class="section-number-2">4</span> Implementations</h2>
+<div id="outline-container-orgcce97f4" class="outline-2">
+<h2 id="orgcce97f4"><span class="section-number-2">4</span> Implementations</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Implementation details goes here.
 </p>
 </div>
 
-<div id="outline-container-orgf31f2d9" class="outline-3">
-<h3 id="orgf31f2d9"><span class="section-number-3">4.1</span> Spectre</h3>
+<div id="outline-container-org4a53277" class="outline-3">
+<h3 id="org4a53277"><span class="section-number-3">4.1</span> Spectre</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 Our implementation resides in the <code>spectre</code> directory of the repository:
 </p>
 
-<pre class="example" id="orgf40e447">
+<pre class="example" id="org033038c">
 spectre
 ├── asm.c
 ├── asm.h
@@ -656,13 +748,13 @@ instructions.</li>
 </div>
 </div>
 
-<div id="outline-container-org98618e1" class="outline-3">
-<h3 id="org98618e1"><span class="section-number-3">4.2</span> gem5</h3>
+<div id="outline-container-org25efdcb" class="outline-3">
+<h3 id="org25efdcb"><span class="section-number-3">4.2</span> gem5</h3>
 </div>
 </div>
 
-<div id="outline-container-org8ef53aa" class="outline-2">
-<h2 id="org8ef53aa"><span class="section-number-2">5</span> Appendices</h2>
+<div id="outline-container-orgb1d4d94" class="outline-2">
+<h2 id="orgb1d4d94"><span class="section-number-2">5</span> Appendices</h2>
 <div class="outline-text-2" id="text-5">
 <ul class="org-ul">
 <li>If you are a gem5 user who experience some unresolved errors, you could
@@ -673,7 +765,7 @@ check the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-04-01 jeu. 13:44</p>
+<p class="date">Created: 2021-04-01 jeu. 16:51</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
