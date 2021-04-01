@@ -77,9 +77,10 @@
    #+END_SRC
 
    If it works correctly, you surely want to generate the metrics as we do in
-   the paper and customize some parameters. To do so, we use this loop for
-   repeating runs. We first launch one experiment, and relaunch the others
-   with the =-q= flag to suppress header line:
+   the paper and customize some parameters. The metrics will be generated in a
+   =csv= format, you can then redirect them to a file. To do so, we use this
+   loop to repeat the hole experiment. We first launch one experiment, and
+   relaunch the others with the =-q= flag to suppress header line:
 
    #+BEGIN_SRC bash :eval never
    # Parameters.
@@ -95,10 +96,54 @@
    done
    #+END_SRC
 
-   Important note:
-   - There is a =TODO= item in the =perf.c= file that requires a manual
-     intervention to use =perf_event= either on a native ARM system or on a
-     gem5's simulated ARM system.
+   Later, if you want to generate the metrics on gem5, you will have to
+   recompile the binary with the following patch (remind to save the previously
+   compiled binary). Use src_bash[:eval never :exports code]{git apply
+   spectre/perf.c.patch} or comment/uncomment the few lines yourself (this is
+   still a =TODO= item in the source code):
+
+   #+BEGIN_SRC diff :tangle ../spectre/perf.c.patch
+   diff --git i/spectre/perf.c w/spectre/perf.c
+   index 3b89ee7..c648e28 100644
+   --- i/spectre/perf.c
+   +++ w/spectre/perf.c
+   @@ -39,9 +39,9 @@ static int perf_fd_branch_miss;
+    static void perf_attr_init(struct perf_event_attr * attr, uint64_t config)
+    {
+        /* To use with real ARM hardware: */
+   -    attr->type = PERF_TYPE_HARDWARE;
+   +    // attr->type = PERF_TYPE_HARDWARE;
+        /* To use with gem5 full-system ARM: */
+   -    // attr->type = PERF_TYPE_RAW;
+   +    attr->type = PERF_TYPE_RAW;
+        attr->config = config;
+        attr->size = sizeof(*attr);
+        attr->exclude_kernel = 1;
+   @@ -53,9 +53,9 @@ void perf_init() {
+        /* Initialize our perf_event_attr, representing one counter to be read. */
+        static struct perf_event_attr attr_cache_miss;
+        /* To use with real ARM hardware: */
+   -    perf_attr_init(&attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);
+   +    // perf_attr_init(&attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);
+        /* To use with gem5 full-system ARM: */
+   -    // perf_attr_init(&attr_cache_miss, 0x33);
+   +    perf_attr_init(&attr_cache_miss, 0x33);
+        /* Open the file descriptor corresponding to this counter. The counter
+           should start at this moment. */
+        if ((perf_fd_cache_miss = syscall(__NR_perf_event_open, &attr_cache_miss, 0, -1, -1, 0)) == -1)
+   @@ -64,8 +64,8 @@ void perf_init() {
+        /* Same here. */
+        static struct perf_event_attr attr_branch_miss;
+        /* To use with real ARM hardware: */
+   -    perf_attr_init(&attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);
+   +    // perf_attr_init(&attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);
+        /* To use with gem5 full-system ARM: */
+   -    // perf_attr_init(&attr_branch_miss, 0x10);
+   +    perf_attr_init(&attr_branch_miss, 0x10);
+        if ((perf_fd_branch_miss = syscall(__NR_perf_event_open, &attr_branch_miss, 0, -1, -1, 0)) == -1)
+            fprintf(stderr, "perf_event_open fail %d %d: %s\n", perf_fd_branch_miss, errno, strerror(errno));
+    }
+   #+END_SRC
     
 ** How to Simulate Spectre with gem5
    :PROPERTIES:
