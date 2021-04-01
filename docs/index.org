@@ -41,7 +41,7 @@
    make
    #+END_SRC
 
-   Test if the binary is working by displaying an useful help message:
+   Test if the binary is working by displaying a useful help message:
 
    #+BEGIN_SRC bash :eval never
    ./spectre --help
@@ -70,7 +70,7 @@
    Report bugs to <pierre.ayoub@irisa.fr>.
    #+END_EXAMPLE
     
-   And test the attack with default parameters like this:
+   And test the attack with the default parameters like this:
 
    #+BEGIN_SRC bash :eval never
    ./spectre 
