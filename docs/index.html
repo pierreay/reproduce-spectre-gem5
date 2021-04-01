@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-04-01 jeu. 10:09 -->
+<!-- 2021-04-01 jeu. 10:12 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
@@ -224,30 +224,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org94324c5">1. Introduction</a></li>
-<li><a href="#orgfe3a442">2. Repository</a></li>
-<li><a href="#org2646183">3. HowTo</a>
+<li><a href="#orgfa89ec8">1. Introduction</a></li>
+<li><a href="#orge252a34">2. Repository</a></li>
+<li><a href="#orge6677f8">3. HowTo</a>
 <ul>
-<li><a href="#setup_arm">3.1. Setup the native ARM system</a></li>
+<li><a href="#setup_arm">3.1. How to Setup the Native ARM System</a></li>
 <li><a href="#howto_spectre">3.2. How to Perform the Spectre Attack</a></li>
-<li><a href="#org8738954">3.3. How to Setup gem5</a></li>
+<li><a href="#orge77b738">3.3. How to Setup gem5</a></li>
 <li><a href="#howto_gem5">3.4. How to Simulate Spectre with gem5</a></li>
 <li><a href="#howto_konata">3.5. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#org6a4025b">4. Implementations</a>
+<li><a href="#orga7d0edc">4. Implementations</a>
 <ul>
-<li><a href="#org91236e2">4.1. Spectre</a></li>
-<li><a href="#org59e8f20">4.2. gem5</a></li>
+<li><a href="#org4e32fa7">4.1. Spectre</a></li>
+<li><a href="#org84969ae">4.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#org212e426">5. Appendices</a></li>
+<li><a href="#org2ccc0da">5. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org94324c5" class="outline-2">
-<h2 id="org94324c5"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orgfa89ec8" class="outline-2">
+<h2 id="orgfa89ec8"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This web page is linked to the <i><a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf">Reproducing Spectre Attack with gem5, How To
@@ -269,8 +269,8 @@ below to:
 </div>
 </div>
 
-<div id="outline-container-orgfe3a442" class="outline-2">
-<h2 id="orgfe3a442"><span class="section-number-2">2</span> Repository</h2>
+<div id="outline-container-orge252a34" class="outline-2">
+<h2 id="orge252a34"><span class="section-number-2">2</span> Repository</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This web page is part of the repository located <a href="https://github.com/pierreay/reproduce-spectre-gem5">here</a>. See the <code>README.md</code>
@@ -279,12 +279,12 @@ file for repository organization and navigation.
 </div>
 </div>
 
-<div id="outline-container-org2646183" class="outline-2">
-<h2 id="org2646183"><span class="section-number-2">3</span> HowTo</h2>
+<div id="outline-container-orge6677f8" class="outline-2">
+<h2 id="orge6677f8"><span class="section-number-2">3</span> HowTo</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-setup_arm" class="outline-3">
-<h3 id="setup_arm"><span class="section-number-3">3.1</span> Setup the native ARM system</h3>
+<h3 id="setup_arm"><span class="section-number-3">3.1</span> How to Setup the Native ARM System</h3>
 <div class="outline-text-3" id="text-setup_arm">
 <p>
 To reproduce this work, you will need:
@@ -359,17 +359,26 @@ You are now ready to reproduce Spectre on the Raspberry Pi.
 <h3 id="howto_spectre"><span class="section-number-3">3.2</span> How to Perform the Spectre Attack</h3>
 <div class="outline-text-3" id="text-howto_spectre">
 <p>
-We assume that you cloned the repository on the ARM system described in
-Section <a href="#setup_arm">3.1</a>.
+We assume that you are on the ARM system described in Section <a href="#setup_arm">3.1</a> or
+an equivalent one.
 </p>
+
+<p>
+First, clone the repository:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">git clone https://github.com/pierreay/reproduce-spectre-gem5
+<span style="color: #91b9c7;">cd</span> reproduce-spectre-gem5
+</pre>
+</div>
 
 <p>
 Simply use the <code>Makefile</code> to compile our implementation:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> spectre
-make
+<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> spectre &amp;&amp; make
 </pre>
 </div>
 
@@ -382,7 +391,7 @@ Test if the binary is working by displaying a useful help message:
 </pre>
 </div>
 
-<pre class="example" id="org4d86c1e">
+<pre class="example" id="org16aae9a">
 Usage: spectre [OPTION...]
 Spectre -- A Spectre implementation useful for research
 
@@ -490,8 +499,8 @@ still a <code>TODO</code> item in the source code):
 </div>
 </div>
 
-<div id="outline-container-org8738954" class="outline-3">
-<h3 id="org8738954"><span class="section-number-3">3.3</span> How to Setup gem5</h3>
+<div id="outline-container-orge77b738" class="outline-3">
+<h3 id="orge77b738"><span class="section-number-3">3.3</span> How to Setup gem5</h3>
 </div>
 
 <div id="outline-container-howto_gem5" class="outline-3">
@@ -507,22 +516,22 @@ still a <code>TODO</code> item in the source code):
 </div>
 </div>
 
-<div id="outline-container-org6a4025b" class="outline-2">
-<h2 id="org6a4025b"><span class="section-number-2">4</span> Implementations</h2>
+<div id="outline-container-orga7d0edc" class="outline-2">
+<h2 id="orga7d0edc"><span class="section-number-2">4</span> Implementations</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Implementation details goes here.
 </p>
 </div>
 
-<div id="outline-container-org91236e2" class="outline-3">
-<h3 id="org91236e2"><span class="section-number-3">4.1</span> Spectre</h3>
+<div id="outline-container-org4e32fa7" class="outline-3">
+<h3 id="org4e32fa7"><span class="section-number-3">4.1</span> Spectre</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 Our implementation resides in the <code>spectre</code> directory of the repository:
 </p>
 
-<pre class="example" id="org4728042">
+<pre class="example" id="orgcf61f78">
 spectre
 ├── asm.c
 ├── asm.h
@@ -561,13 +570,13 @@ instructions.</li>
 </div>
 </div>
 
-<div id="outline-container-org59e8f20" class="outline-3">
-<h3 id="org59e8f20"><span class="section-number-3">4.2</span> gem5</h3>
+<div id="outline-container-org84969ae" class="outline-3">
+<h3 id="org84969ae"><span class="section-number-3">4.2</span> gem5</h3>
 </div>
 </div>
 
-<div id="outline-container-org212e426" class="outline-2">
-<h2 id="org212e426"><span class="section-number-2">5</span> Appendices</h2>
+<div id="outline-container-org2ccc0da" class="outline-2">
+<h2 id="org2ccc0da"><span class="section-number-2">5</span> Appendices</h2>
 <div class="outline-text-2" id="text-5">
 <ul class="org-ul">
 <li>If you are a gem5 user who experience some unresolved errors, you could see
@@ -578,7 +587,7 @@ the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html"
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-04-01 jeu. 10:09</p>
+<p class="date">Created: 2021-04-01 jeu. 10:12</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

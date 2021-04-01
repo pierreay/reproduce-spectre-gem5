@@ -26,7 +26,7 @@
 
 * HowTo
 
-** Setup the native ARM system
+** How to Setup the Native ARM System
    :PROPERTIES:
    :CUSTOM_ID: setup_arm
    :END:
@@ -84,14 +84,20 @@
    :CUSTOM_ID: howto_spectre
    :END:
 
-   We assume that you cloned the repository on the ARM system described in
-   Section [[#setup_arm]].
+   We assume that you are on the ARM system described in Section [[#setup_arm]] or
+   an equivalent one.
+
+   First, clone the repository:
+
+   #+BEGIN_SRC bash :eval never
+   git clone https://github.com/pierreay/reproduce-spectre-gem5
+   cd reproduce-spectre-gem5
+   #+END_SRC
 
    Simply use the =Makefile= to compile our implementation:
     
    #+BEGIN_SRC bash :eval never
-   cd spectre
-   make
+   cd spectre && make
    #+END_SRC
 
    Test if the binary is working by displaying a useful help message:
