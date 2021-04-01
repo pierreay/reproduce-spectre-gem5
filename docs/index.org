@@ -35,7 +35,8 @@
    - An ARM board. We used a [[https://static.raspberrypi.org/files/product-briefs/200521+Raspberry+Pi+4+Product+Brief.pdf][Raspberry Pi v4 Model B Rev 1.1]] embedding a [[http://infocenter.arm.com/help/topic/com.arm.doc.100095_0003_06_en/cortex_a72_mpcore_trm_100095_0003_06_en.pdf][ARM
      Cortex-A72]] (ARMv8-A) processor implemented in a SoC [[https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/rpi_DATA_2711_1p0.pdf][Broadcom BCM2711]].
    - A 64-bit operating system (kernel and userland) for ARM. We used [[https://www.offensive-security.com/kali-linux-arm-images/][Kali
-     Linux]] (stable v2020.2a), because:
+     Linux]] (stable v2020.2a, with a Linux kernel v4.19.118-Re4son-v8l+ and a
+     GCC compiler v9.3), because:
      1. It is a full 64-bit operating system supporting ARM,
      2. The kernel is nearly the same as the one provided by gem5,
      3. The kernel sources and headers are available with =apt= (for developing
@@ -205,7 +206,64 @@
    #+END_SRC
     
 ** How to Setup gem5
-  
+
+   To reproduce this work, you will need:
+   - A working [[https://www.gem5.org/getting_started/][gem5]] installation. We used gem5 v20.0.
+   - An [[https://www.gem5.org/documentation/general_docs/fullsystem/guest_binaries][operating system image and a kernel image]] ready-to-use with gem5. We
+     used the [[http://dist.gem5.org/dist/current/arm/disks/linaro-minimal-aarch64.img.bz2][64-bit Linaro Minimal v7.4.0 (based on Ubuntu)]] and the [[http://dist.gem5.org/dist/current/arm/aarch-system-201901106.tar.bz2][ARM64
+     Linux kernel v4.18.0]] images provided by gem5's developers.
+
+   Here, you can either:
+   - Follow the steps on the gem5 website to get the latest version of it and
+     use the new recommended methods (e.g., Docker container). You may have to
+     adapt our work to this new version, and the results may not be the same.
+   - Reproduce exactly what we did, with a bit of tinkering.
+
+   First, install the recommendedg packages:
+
+   #+BEGIN_SRC bash :eval never
+   sudo apt install build-essential git m4 scons zlib1g zlib1g-dev \
+       libprotobuf-dev protobuf-compiler libprotoc-dev libgoogle-perftools-dev \
+       python3-dev python3-six python libboost-all-dev pkg-config
+   #+END_SRC
+
+   Clone the gem5 repository:
+
+   #+BEGIN_SRC bash :eval never
+   git clone https://gem5.googlesource.com/public/gem5
+   cd gem5
+   #+END_SRC
+
+   Checkout the commit for version 20.0:
+
+   #+BEGIN_SRC bash :eval never
+   git checkout v20.0.0.0
+   #+END_SRC
+
+   And finally, compile it in optimized mode (=opt=), for the ARM architecture
+   (=ARM=), with 8 cores and for Python 3. It can take several hours:
+
+   #+BEGIN_SRC bash :eval never
+   mode="opt"
+   arch="ARM"
+   cores=8
+   py_version=3 
+   scons PYTHON_CONFIG=python$py_version-config build/$arch/gem5.$mode -j $cores
+   #+END_SRC
+
+    If everything is working, we should be able to display the help of one
+    simulation script:
+
+    #+BEGIN_SRC bash :eval never
+    build/ARM/gem5.opt -q configs/example/arm/starter_fs.py --help   
+    #+END_SRC
+
+    Otherwise, check the [[https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#compilation][=docs/gem5_errors.html=]] file to see if the compilation
+    error has already been encountered.
+    
+    Let's create the images we need to simulate Spectre on a full-system
+    simulation:
+    
 ** How to Simulate Spectre with gem5
    :PROPERTIES:
    :CUSTOM_ID: howto_gem5
@@ -262,5 +320,5 @@
    
 * Appendices
 
-  - If you are a gem5 user who experience some unresolved errors, you could see
-    the [[https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html][=docs/gem5_errors.html=]] file.
+  - If you are a gem5 user who experience some unresolved errors, you could
+    check the [[https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#runtime][=docs/gem5_errors.html=]] file.

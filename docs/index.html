@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-04-01 jeu. 10:12 -->
+<!-- 2021-04-01 jeu. 13:44 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
@@ -224,30 +224,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgfa89ec8">1. Introduction</a></li>
-<li><a href="#orge252a34">2. Repository</a></li>
-<li><a href="#orge6677f8">3. HowTo</a>
+<li><a href="#org23e1c2a">1. Introduction</a></li>
+<li><a href="#orgfc21dbe">2. Repository</a></li>
+<li><a href="#org33a2042">3. HowTo</a>
 <ul>
 <li><a href="#setup_arm">3.1. How to Setup the Native ARM System</a></li>
 <li><a href="#howto_spectre">3.2. How to Perform the Spectre Attack</a></li>
-<li><a href="#orge77b738">3.3. How to Setup gem5</a></li>
+<li><a href="#orgc1ab0f3">3.3. How to Setup gem5</a></li>
 <li><a href="#howto_gem5">3.4. How to Simulate Spectre with gem5</a></li>
 <li><a href="#howto_konata">3.5. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#orga7d0edc">4. Implementations</a>
+<li><a href="#org41ebb01">4. Implementations</a>
 <ul>
-<li><a href="#org4e32fa7">4.1. Spectre</a></li>
-<li><a href="#org84969ae">4.2. gem5</a></li>
+<li><a href="#orgf31f2d9">4.1. Spectre</a></li>
+<li><a href="#org98618e1">4.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#org2ccc0da">5. Appendices</a></li>
+<li><a href="#org8ef53aa">5. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgfa89ec8" class="outline-2">
-<h2 id="orgfa89ec8"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-org23e1c2a" class="outline-2">
+<h2 id="org23e1c2a"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This web page is linked to the <i><a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf">Reproducing Spectre Attack with gem5, How To
@@ -269,8 +269,8 @@ below to:
 </div>
 </div>
 
-<div id="outline-container-orge252a34" class="outline-2">
-<h2 id="orge252a34"><span class="section-number-2">2</span> Repository</h2>
+<div id="outline-container-orgfc21dbe" class="outline-2">
+<h2 id="orgfc21dbe"><span class="section-number-2">2</span> Repository</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This web page is part of the repository located <a href="https://github.com/pierreay/reproduce-spectre-gem5">here</a>. See the <code>README.md</code>
@@ -279,8 +279,8 @@ file for repository organization and navigation.
 </div>
 </div>
 
-<div id="outline-container-orge6677f8" class="outline-2">
-<h2 id="orge6677f8"><span class="section-number-2">3</span> HowTo</h2>
+<div id="outline-container-org33a2042" class="outline-2">
+<h2 id="org33a2042"><span class="section-number-2">3</span> HowTo</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-setup_arm" class="outline-3">
@@ -293,7 +293,8 @@ To reproduce this work, you will need:
 <li>An ARM board. We used a <a href="https://static.raspberrypi.org/files/product-briefs/200521+Raspberry+Pi+4+Product+Brief.pdf">Raspberry Pi v4 Model B Rev 1.1</a> embedding a <a href="http://infocenter.arm.com/help/topic/com.arm.doc.100095_0003_06_en/cortex_a72_mpcore_trm_100095_0003_06_en.pdf">ARM
 Cortex-A72</a> (ARMv8-A) processor implemented in a SoC <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/rpi_DATA_2711_1p0.pdf">Broadcom BCM2711</a>.</li>
 <li>A 64-bit operating system (kernel and userland) for ARM. We used <a href="https://www.offensive-security.com/kali-linux-arm-images/">Kali
-Linux</a> (stable v2020.2a), because:
+Linux</a> (stable v2020.2a, with a Linux kernel v4.19.118-Re4son-v8l+ and a
+GCC compiler v9.3), because:
 <ol class="org-ol">
 <li>It is a full 64-bit operating system supporting ARM,</li>
 <li>The kernel is nearly the same as the one provided by gem5,</li>
@@ -391,7 +392,7 @@ Test if the binary is working by displaying a useful help message:
 </pre>
 </div>
 
-<pre class="example" id="org16aae9a">
+<pre class="example" id="orgb97a1b4">
 Usage: spectre [OPTION...]
 Spectre -- A Spectre implementation useful for research
 
@@ -499,8 +500,93 @@ still a <code>TODO</code> item in the source code):
 </div>
 </div>
 
-<div id="outline-container-orge77b738" class="outline-3">
-<h3 id="orge77b738"><span class="section-number-3">3.3</span> How to Setup gem5</h3>
+<div id="outline-container-orgc1ab0f3" class="outline-3">
+<h3 id="orgc1ab0f3"><span class="section-number-3">3.3</span> How to Setup gem5</h3>
+<div class="outline-text-3" id="text-3-3">
+<p>
+To reproduce this work, you will need:
+</p>
+<ul class="org-ul">
+<li>A working <a href="https://www.gem5.org/getting_started/">gem5</a> installation. We used gem5 v20.0.</li>
+<li>An <a href="https://www.gem5.org/documentation/general_docs/fullsystem/guest_binaries">operating system image and a kernel image</a> ready-to-use with gem5. We
+used the <a href="http://dist.gem5.org/dist/current/arm/disks/linaro-minimal-aarch64.img.bz2">64-bit Linaro Minimal v7.4.0 (based on Ubuntu)</a> and the <a href="http://dist.gem5.org/dist/current/arm/aarch-system-201901106.tar.bz2">ARM64
+Linux kernel v4.18.0</a> images provided by gem5's developers.</li>
+</ul>
+
+<p>
+Here, you can either:
+</p>
+<ul class="org-ul">
+<li>Follow the steps on the gem5 website to get the latest version of it and
+use the new recommended methods (e.g., Docker container). You may have to
+adapt our work to this new version, and the results may not be the same.</li>
+<li>Reproduce exactly what we did, with a bit of tinkering.</li>
+</ul>
+
+<p>
+First, install the recommended packages:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">sudo apt install build-essential git m4 scons zlib1g zlib1g-dev <span style="color: #fbaed2;">\</span>
+    libprotobuf-dev protobuf-compiler libprotoc-dev libgoogle-perftools-dev <span style="color: #fbaed2;">\</span>
+    python3-dev python3-six python libboost-all-dev pkg-config
+</pre>
+</div>
+
+<p>
+Clone the gem5 repository:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">git clone https://gem5.googlesource.com/public/gem5
+<span style="color: #91b9c7;">cd</span> gem5
+</pre>
+</div>
+
+<p>
+Checkout the commit for version 20.0:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">git checkout v20.0.0.0
+</pre>
+</div>
+
+<p>
+And finally, compile it in optimized mode (<code>opt</code>), for the ARM architecture
+(<code>ARM</code>), with 8 cores and for Python 3. It can take several hours:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #47ba99;">mode</span>=<span style="color: #fbaed2;">"opt"</span>
+<span style="color: #47ba99;">arch</span>=<span style="color: #fbaed2;">"ARM"</span>
+<span style="color: #47ba99;">cores</span>=<span style="color: #ef6787;">8</span>
+<span style="color: #47ba99;">py_version</span>=<span style="color: #ef6787;">3</span> 
+scons <span style="color: #47ba99;">PYTHON_CONFIG</span>=python$<span style="color: #47ba99;">py_version</span>-config build/$<span style="color: #47ba99;">arch</span>/gem5.$<span style="color: #47ba99;">mode</span> -j $<span style="color: #47ba99;">cores</span>
+</pre>
+</div>
+
+<p>
+If everything is working, we should be able to display the help of one
+simulation script:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">build/ARM/gem5.opt -q configs/example/arm/starter_fs.py --help   
+</pre>
+</div>
+
+<p>
+Otherwise, check the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#compilation"><code>docs/gem5_errors.html</code></a> file to see if the compilation
+error has already been encountered.
+</p>
+
+<p>
+Let's create the images we need to simulate Spectre on a full-system
+simulation:
+</p>
+</div>
 </div>
 
 <div id="outline-container-howto_gem5" class="outline-3">
@@ -516,22 +602,22 @@ still a <code>TODO</code> item in the source code):
 </div>
 </div>
 
-<div id="outline-container-orga7d0edc" class="outline-2">
-<h2 id="orga7d0edc"><span class="section-number-2">4</span> Implementations</h2>
+<div id="outline-container-org41ebb01" class="outline-2">
+<h2 id="org41ebb01"><span class="section-number-2">4</span> Implementations</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Implementation details goes here.
 </p>
 </div>
 
-<div id="outline-container-org4e32fa7" class="outline-3">
-<h3 id="org4e32fa7"><span class="section-number-3">4.1</span> Spectre</h3>
+<div id="outline-container-orgf31f2d9" class="outline-3">
+<h3 id="orgf31f2d9"><span class="section-number-3">4.1</span> Spectre</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 Our implementation resides in the <code>spectre</code> directory of the repository:
 </p>
 
-<pre class="example" id="orgcf61f78">
+<pre class="example" id="orgf40e447">
 spectre
 ├── asm.c
 ├── asm.h
@@ -570,24 +656,24 @@ instructions.</li>
 </div>
 </div>
 
-<div id="outline-container-org84969ae" class="outline-3">
-<h3 id="org84969ae"><span class="section-number-3">4.2</span> gem5</h3>
+<div id="outline-container-org98618e1" class="outline-3">
+<h3 id="org98618e1"><span class="section-number-3">4.2</span> gem5</h3>
 </div>
 </div>
 
-<div id="outline-container-org2ccc0da" class="outline-2">
-<h2 id="org2ccc0da"><span class="section-number-2">5</span> Appendices</h2>
+<div id="outline-container-org8ef53aa" class="outline-2">
+<h2 id="org8ef53aa"><span class="section-number-2">5</span> Appendices</h2>
 <div class="outline-text-2" id="text-5">
 <ul class="org-ul">
-<li>If you are a gem5 user who experience some unresolved errors, you could see
-the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html"><code>docs/gem5_errors.html</code></a> file.</li>
+<li>If you are a gem5 user who experience some unresolved errors, you could
+check the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#runtime"><code>docs/gem5_errors.html</code></a> file.</li>
 </ul>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-04-01 jeu. 10:12</p>
+<p class="date">Created: 2021-04-01 jeu. 13:44</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
