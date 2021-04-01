@@ -8,7 +8,7 @@
 * Introduction
 
   This web page is linked to the /[[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf][Reproducing Spectre Attack with gem5, How To
-  Do It Right?]]/ paper, as well with the /[[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/report.pdf][Simulating Transient Execution Attacks
+  Do It Right?]]/ paper, as well with the /[[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/master_thesis.pdf][Simulating Transient Execution Attacks
   with gem5]]/ master thesis.
 
   It will guide you through the reproduction of the experiments, the usage of
