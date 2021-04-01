@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-04-01 jeu. 09:38 -->
+<!-- 2021-04-01 jeu. 10:09 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
@@ -224,29 +224,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orgf07a738">1. Introduction</a></li>
-<li><a href="#orgdea4831">2. Repository</a></li>
-<li><a href="#orgc3e98e5">3. HowTo</a>
+<li><a href="#org94324c5">1. Introduction</a></li>
+<li><a href="#orgfe3a442">2. Repository</a></li>
+<li><a href="#org2646183">3. HowTo</a>
 <ul>
-<li><a href="#howto_spectre">3.1. How to Perform the Spectre Attack</a></li>
-<li><a href="#orgd3b4eef">3.2. How to Setup gem5</a></li>
-<li><a href="#howto_gem5">3.3. How to Simulate Spectre with gem5</a></li>
-<li><a href="#howto_konata">3.4. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
+<li><a href="#setup_arm">3.1. Setup the native ARM system</a></li>
+<li><a href="#howto_spectre">3.2. How to Perform the Spectre Attack</a></li>
+<li><a href="#org8738954">3.3. How to Setup gem5</a></li>
+<li><a href="#howto_gem5">3.4. How to Simulate Spectre with gem5</a></li>
+<li><a href="#howto_konata">3.5. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#org22cb112">4. Implementations</a>
+<li><a href="#org6a4025b">4. Implementations</a>
 <ul>
-<li><a href="#org07efb87">4.1. Spectre</a></li>
-<li><a href="#org43ca4b1">4.2. gem5</a></li>
+<li><a href="#org91236e2">4.1. Spectre</a></li>
+<li><a href="#org59e8f20">4.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#org107a35e">5. Appendices</a></li>
+<li><a href="#org212e426">5. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgf07a738" class="outline-2">
-<h2 id="orgf07a738"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-org94324c5" class="outline-2">
+<h2 id="org94324c5"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This web page is linked to the <i><a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf">Reproducing Spectre Attack with gem5, How To
@@ -268,8 +269,8 @@ below to:
 </div>
 </div>
 
-<div id="outline-container-orgdea4831" class="outline-2">
-<h2 id="orgdea4831"><span class="section-number-2">2</span> Repository</h2>
+<div id="outline-container-orgfe3a442" class="outline-2">
+<h2 id="orgfe3a442"><span class="section-number-2">2</span> Repository</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This web page is part of the repository located <a href="https://github.com/pierreay/reproduce-spectre-gem5">here</a>. See the <code>README.md</code>
@@ -278,16 +279,88 @@ file for repository organization and navigation.
 </div>
 </div>
 
-<div id="outline-container-orgc3e98e5" class="outline-2">
-<h2 id="orgc3e98e5"><span class="section-number-2">3</span> HowTo</h2>
+<div id="outline-container-org2646183" class="outline-2">
+<h2 id="org2646183"><span class="section-number-2">3</span> HowTo</h2>
 <div class="outline-text-2" id="text-3">
 </div>
+<div id="outline-container-setup_arm" class="outline-3">
+<h3 id="setup_arm"><span class="section-number-3">3.1</span> Setup the native ARM system</h3>
+<div class="outline-text-3" id="text-setup_arm">
+<p>
+To reproduce this work, you will need:
+</p>
+<ul class="org-ul">
+<li>An ARM board. We used a <a href="https://static.raspberrypi.org/files/product-briefs/200521+Raspberry+Pi+4+Product+Brief.pdf">Raspberry Pi v4 Model B Rev 1.1</a> embedding a <a href="http://infocenter.arm.com/help/topic/com.arm.doc.100095_0003_06_en/cortex_a72_mpcore_trm_100095_0003_06_en.pdf">ARM
+Cortex-A72</a> (ARMv8-A) processor implemented in a SoC <a href="https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/rpi_DATA_2711_1p0.pdf">Broadcom BCM2711</a>.</li>
+<li>A 64-bit operating system (kernel and userland) for ARM. We used <a href="https://www.offensive-security.com/kali-linux-arm-images/">Kali
+Linux</a> (stable v2020.2a), because:
+<ol class="org-ol">
+<li>It is a full 64-bit operating system supporting ARM,</li>
+<li>The kernel is nearly the same as the one provided by gem5,</li>
+<li>The kernel sources and headers are available with <code>apt</code> (for developing
+kernel modules, if you do so).</li>
+</ol></li>
+</ul>
+
+<p>
+Install the Kali Linux distribution. First, download the image:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> /tmp
+<span style="color: #47ba99;">zip</span>=<span style="color: #fbaed2;">"kali.xz"</span>
+<span style="color: #47ba99;">img</span>=<span style="color: #fbaed2;">"kali.img"</span>
+wget -O <span style="color: #fbaed2;">"$zip"</span> https://images.offensive-security.com/arm-images/kali-linux-2020.2a-rpi3-nexmon-64.img.xz
+xzcat <span style="color: #fbaed2;">"$zip"</span> &gt; <span style="color: #fbaed2;">"$img"</span>
+rm -f <span style="color: #fbaed2;">"$zip"</span>
+</pre>
+</div>
+
+<p>
+Then, insert your SD card in your computer, and make sure that device block
+name is correct (find it with <code>lsblk</code> and <code>umount</code> it if it has been
+automatically mounted). Bit-copy the image on the SD card:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #47ba99;">sdcard</span>=/dev/sdd
+sudo dd <span style="color: #47ba99;">bs</span>=<span style="color: #ef6787;">4M</span> <span style="color: #47ba99;">if</span>=<span style="color: #fbaed2;">"$img"</span> <span style="color: #47ba99;">of</span>=<span style="color: #fbaed2;">"$sdcard"</span> <span style="color: #47ba99;">status</span>=progress <span style="color: #47ba99;">conv</span>=fsync
+rm -f <span style="color: #fbaed2;">"$img"</span>
+</pre>
+</div>
+
+<p>
+Now, plug the SD card in the Raspberry Pi, plug an Ethernet cable and plug
+the power cable in it. Then, find the IP address associated to it and
+connect with the <code>kali</code> login and <code>kali</code> password:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #47ba99;">ip</span>=<span style="color: #fbaed2;">"192.168.1.1"</span> <span style="color: #697375;"># </span><span style="color: #697375;">Find the correct IP.</span>
+ssh kali@$<span style="color: #47ba99;">ip</span>
+<span style="color: #697375;"># </span><span style="color: #697375;">We install the following software:</span>
+sudo apt-get update &amp;&amp; sudo apt-get upgrade
+sudo apt-get -y install linux-cpupower git
+</pre>
+</div>
+
+<p>
+You can log in the <code>root</code> account by issuing the command <code>sudo su root</code> if
+needed.
+</p>
+
+<p>
+You are now ready to reproduce Spectre on the Raspberry Pi.
+</p>
+</div>
+</div>
+
 <div id="outline-container-howto_spectre" class="outline-3">
-<h3 id="howto_spectre"><span class="section-number-3">3.1</span> How to Perform the Spectre Attack</h3>
+<h3 id="howto_spectre"><span class="section-number-3">3.2</span> How to Perform the Spectre Attack</h3>
 <div class="outline-text-3" id="text-howto_spectre">
 <p>
-We assume that you cloned the repository on an ARM system, like a Raspberry
-Pi.
+We assume that you cloned the repository on the ARM system described in
+Section <a href="#setup_arm">3.1</a>.
 </p>
 
 <p>
@@ -309,7 +382,7 @@ Test if the binary is working by displaying a useful help message:
 </pre>
 </div>
 
-<pre class="example" id="org5cdd5ad">
+<pre class="example" id="org4d86c1e">
 Usage: spectre [OPTION...]
 Spectre -- A Spectre implementation useful for research
 
@@ -417,39 +490,39 @@ still a <code>TODO</code> item in the source code):
 </div>
 </div>
 
-<div id="outline-container-orgd3b4eef" class="outline-3">
-<h3 id="orgd3b4eef"><span class="section-number-3">3.2</span> How to Setup gem5</h3>
+<div id="outline-container-org8738954" class="outline-3">
+<h3 id="org8738954"><span class="section-number-3">3.3</span> How to Setup gem5</h3>
 </div>
 
 <div id="outline-container-howto_gem5" class="outline-3">
-<h3 id="howto_gem5"><span class="section-number-3">3.3</span> How to Simulate Spectre with gem5</h3>
+<h3 id="howto_gem5"><span class="section-number-3">3.4</span> How to Simulate Spectre with gem5</h3>
 <div class="outline-text-3" id="text-howto_gem5">
 </div>
 </div>
 
 <div id="outline-container-howto_konata" class="outline-3">
-<h3 id="howto_konata"><span class="section-number-3">3.4</span> How to Visualize the Pipeline of a gem5 Processor with Konata</h3>
+<h3 id="howto_konata"><span class="section-number-3">3.5</span> How to Visualize the Pipeline of a gem5 Processor with Konata</h3>
 <div class="outline-text-3" id="text-howto_konata">
 </div>
 </div>
 </div>
 
-<div id="outline-container-org22cb112" class="outline-2">
-<h2 id="org22cb112"><span class="section-number-2">4</span> Implementations</h2>
+<div id="outline-container-org6a4025b" class="outline-2">
+<h2 id="org6a4025b"><span class="section-number-2">4</span> Implementations</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Implementation details goes here.
 </p>
 </div>
 
-<div id="outline-container-org07efb87" class="outline-3">
-<h3 id="org07efb87"><span class="section-number-3">4.1</span> Spectre</h3>
+<div id="outline-container-org91236e2" class="outline-3">
+<h3 id="org91236e2"><span class="section-number-3">4.1</span> Spectre</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 Our implementation resides in the <code>spectre</code> directory of the repository:
 </p>
 
-<pre class="example" id="orgeb0db2b">
+<pre class="example" id="org4728042">
 spectre
 ├── asm.c
 ├── asm.h
@@ -488,13 +561,13 @@ instructions.</li>
 </div>
 </div>
 
-<div id="outline-container-org43ca4b1" class="outline-3">
-<h3 id="org43ca4b1"><span class="section-number-3">4.2</span> gem5</h3>
+<div id="outline-container-org59e8f20" class="outline-3">
+<h3 id="org59e8f20"><span class="section-number-3">4.2</span> gem5</h3>
 </div>
 </div>
 
-<div id="outline-container-org107a35e" class="outline-2">
-<h2 id="org107a35e"><span class="section-number-2">5</span> Appendices</h2>
+<div id="outline-container-org212e426" class="outline-2">
+<h2 id="org212e426"><span class="section-number-2">5</span> Appendices</h2>
 <div class="outline-text-2" id="text-5">
 <ul class="org-ul">
 <li>If you are a gem5 user who experience some unresolved errors, you could see
@@ -505,7 +578,7 @@ the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html"
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-04-01 jeu. 09:38</p>
+<p class="date">Created: 2021-04-01 jeu. 10:09</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

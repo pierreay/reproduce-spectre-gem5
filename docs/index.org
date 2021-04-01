@@ -26,13 +26,66 @@
 
 * HowTo
 
+** Setup the native ARM system
+   :PROPERTIES:
+   :CUSTOM_ID: setup_arm
+   :END:
+
+   To reproduce this work, you will need:
+   - An ARM board. We used a [[https://static.raspberrypi.org/files/product-briefs/200521+Raspberry+Pi+4+Product+Brief.pdf][Raspberry Pi v4 Model B Rev 1.1]] embedding a [[http://infocenter.arm.com/help/topic/com.arm.doc.100095_0003_06_en/cortex_a72_mpcore_trm_100095_0003_06_en.pdf][ARM
+     Cortex-A72]] (ARMv8-A) processor implemented in a SoC [[https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/rpi_DATA_2711_1p0.pdf][Broadcom BCM2711]].
+   - A 64-bit operating system (kernel and userland) for ARM. We used [[https://www.offensive-security.com/kali-linux-arm-images/][Kali
+     Linux]] (stable v2020.2a), because:
+     1. It is a full 64-bit operating system supporting ARM,
+     2. The kernel is nearly the same as the one provided by gem5,
+     3. The kernel sources and headers are available with =apt= (for developing
+        kernel modules, if you do so).
+
+   Install the Kali Linux distribution. First, download the image:
+
+   #+BEGIN_SRC bash :eval never
+   cd /tmp
+   zip="kali.xz"
+   img="kali.img"
+   wget -O "$zip" https://images.offensive-security.com/arm-images/kali-linux-2020.2a-rpi3-nexmon-64.img.xz
+   xzcat "$zip" > "$img"
+   rm -f "$zip"
+   #+END_SRC
+
+   Then, insert your SD card in your computer, and make sure that device block
+   name is correct (find it with =lsblk= and =umount= it if it has been
+   automatically mounted). Bit-copy the image on the SD card:
+
+   #+BEGIN_SRC bash :eval never
+   sdcard=/dev/sdd
+   sudo dd bs=4M if="$img" of="$sdcard" status=progress conv=fsync
+   rm -f "$img"
+   #+END_SRC
+
+   Now, plug the SD card in the Raspberry Pi, plug an Ethernet cable and plug
+   the power cable in it. Then, find the IP address associated to it and
+   connect with the =kali= login and =kali= password:
+
+   #+BEGIN_SRC bash
+   ip="192.168.1.1" # Find the correct IP.
+   ssh kali@$ip
+   # We install the following software:
+   sudo apt-get update && sudo apt-get upgrade
+   sudo apt-get -y install linux-cpupower git
+   #+END_SRC
+
+   You can log in the =root= account by issuing the command =sudo su root= if
+   needed.
+
+   You are now ready to reproduce Spectre on the Raspberry Pi.
+   
 ** How to Perform the Spectre Attack
    :PROPERTIES:
    :CUSTOM_ID: howto_spectre
    :END:
 
-   We assume that you cloned the repository on an ARM system, like a Raspberry
-   Pi.
+   We assume that you cloned the repository on the ARM system described in
+   Section [[#setup_arm]].
 
    Simply use the =Makefile= to compile our implementation:
     
