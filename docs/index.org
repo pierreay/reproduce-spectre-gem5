@@ -25,7 +25,7 @@
   file for repository organization and navigation.
 
 * HowTo
-  
+
 ** How to Perform the Spectre Attack
    :PROPERTIES:
    :CUSTOM_ID: howto_spectre
@@ -145,6 +145,8 @@
     }
    #+END_SRC
     
+** How to Setup gem5
+  
 ** How to Simulate Spectre with gem5
    :PROPERTIES:
    :CUSTOM_ID: howto_gem5

@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-04-01 jeu. 08:56 -->
+<!-- 2021-04-01 jeu. 09:38 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
@@ -224,28 +224,29 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#orga694f54">1. Introduction</a></li>
-<li><a href="#org00cf5f9">2. Repository</a></li>
-<li><a href="#orgb7a61b5">3. HowTo</a>
+<li><a href="#orgf07a738">1. Introduction</a></li>
+<li><a href="#orgdea4831">2. Repository</a></li>
+<li><a href="#orgc3e98e5">3. HowTo</a>
 <ul>
 <li><a href="#howto_spectre">3.1. How to Perform the Spectre Attack</a></li>
-<li><a href="#howto_gem5">3.2. How to Simulate Spectre with gem5</a></li>
-<li><a href="#howto_konata">3.3. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
+<li><a href="#orgd3b4eef">3.2. How to Setup gem5</a></li>
+<li><a href="#howto_gem5">3.3. How to Simulate Spectre with gem5</a></li>
+<li><a href="#howto_konata">3.4. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#org4dbd8fb">4. Implementations</a>
+<li><a href="#org22cb112">4. Implementations</a>
 <ul>
-<li><a href="#orgc0d070f">4.1. Spectre</a></li>
-<li><a href="#orgf438912">4.2. gem5</a></li>
+<li><a href="#org07efb87">4.1. Spectre</a></li>
+<li><a href="#org43ca4b1">4.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#orgecd5ff0">5. Appendices</a></li>
+<li><a href="#org107a35e">5. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orga694f54" class="outline-2">
-<h2 id="orga694f54"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-orgf07a738" class="outline-2">
+<h2 id="orgf07a738"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This web page is linked to the <i><a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf">Reproducing Spectre Attack with gem5, How To
@@ -267,8 +268,8 @@ below to:
 </div>
 </div>
 
-<div id="outline-container-org00cf5f9" class="outline-2">
-<h2 id="org00cf5f9"><span class="section-number-2">2</span> Repository</h2>
+<div id="outline-container-orgdea4831" class="outline-2">
+<h2 id="orgdea4831"><span class="section-number-2">2</span> Repository</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This web page is part of the repository located <a href="https://github.com/pierreay/reproduce-spectre-gem5">here</a>. See the <code>README.md</code>
@@ -277,8 +278,8 @@ file for repository organization and navigation.
 </div>
 </div>
 
-<div id="outline-container-orgb7a61b5" class="outline-2">
-<h2 id="orgb7a61b5"><span class="section-number-2">3</span> HowTo</h2>
+<div id="outline-container-orgc3e98e5" class="outline-2">
+<h2 id="orgc3e98e5"><span class="section-number-2">3</span> HowTo</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-howto_spectre" class="outline-3">
@@ -300,7 +301,7 @@ make
 </div>
 
 <p>
-Test if the binary is working by displaying an useful help message:
+Test if the binary is working by displaying a useful help message:
 </p>
 
 <div class="org-src-container">
@@ -308,7 +309,7 @@ Test if the binary is working by displaying an useful help message:
 </pre>
 </div>
 
-<pre class="example" id="org1e5e494">
+<pre class="example" id="org5cdd5ad">
 Usage: spectre [OPTION...]
 Spectre -- A Spectre implementation useful for research
 
@@ -332,7 +333,7 @@ Report bugs to &lt;pierre.ayoub@irisa.fr&gt;.
 </pre>
 
 <p>
-And test the attack with default parameters like this:
+And test the attack with the default parameters like this:
 </p>
 
 <div class="org-src-container">
@@ -342,9 +343,10 @@ And test the attack with default parameters like this:
 
 <p>
 If it works correctly, you surely want to generate the metrics as we do in
-the paper and customize some parameters. To do so, we use this loop for
-repeating runs. We first launch one experiment, and relaunch the others
-with the <code>-q</code> flag to suppress header line:
+the paper and customize some parameters. The metrics will be generated in a
+<code>csv</code> format, you can then redirect them to a file. To do so, we use this
+loop to repeat the hole experiment. We first launch one experiment, and
+relaunch the others with the <code>-q</code> flag to suppress header line:
 </p>
 
 <div class="org-src-container">
@@ -363,45 +365,91 @@ with the <code>-q</code> flag to suppress header line:
 </div>
 
 <p>
-Important note:
+Later, if you want to generate the metrics on gem5, you will have to
+recompile the binary with the following patch (remind to save the previously
+compiled binary). Use <code class="src src-bash">git apply spectre/perf.c.patch</code> or comment/uncomment the few lines yourself (this is
+still a <code>TODO</code> item in the source code):
 </p>
-<ul class="org-ul">
-<li>There is a <code>TODO</code> item in the <code>perf.c</code> file that requires a manual
-intervention to use <code>perf_event</code> either on a native ARM system or on a
-gem5's simulated ARM system.</li>
-</ul>
+
+<div class="org-src-container">
+<pre class="src src-diff"><span style="background-color: #383e3f;">diff --git i/spectre/perf.c w/spectre/perf.c</span>
+<span style="background-color: #383e3f;">index 3b89ee7..c648e28 100644</span>
+<span style="background-color: #383e3f;">--- </span><span style="color: #4EB8CA; background-color: #383e3f;">i/spectre/perf.c</span>
+<span style="background-color: #383e3f;">+++ </span><span style="color: #4EB8CA; background-color: #383e3f;">w/spectre/perf.c</span>
+<span style="background-color: #383e3f;">@@ -39,9 +39,9 @@</span><span style="color: #91b9c7; background-color: #383e3f;"> static int perf_fd_branch_miss;</span>
+<span style="color: #697375;"> static void perf_attr_init(struct perf_event_attr * attr, uint64_t config)</span>
+<span style="color: #697375;"> {</span>
+<span style="color: #697375;">     /* To use with real ARM hardware: */</span>
+<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    attr-&gt;type = PERF_TYPE_HARDWARE;</span>
+<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    </span><span style="color: #EEDCC1; background-color: #4FA8A3;">//</span><span style="color: #EEDCC1; background-color: #39855f;"> attr-&gt;type = PERF_TYPE_HARDWARE;</span>
+<span style="color: #697375;">     /* To use with gem5 full-system ARM: */</span>
+<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    </span><span style="color: #EEDCC1; background-color: #C74A4D;">//</span><span style="color: #EEDCC1; background-color: #a0586c;"> attr-&gt;type = PERF_TYPE_RAW;</span>
+<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    attr-&gt;type = PERF_TYPE_RAW;</span>
+<span style="color: #697375;">     attr-&gt;config = config;</span>
+<span style="color: #697375;">     attr-&gt;size = sizeof(*attr);</span>
+<span style="color: #697375;">     attr-&gt;exclude_kernel = 1;</span>
+<span style="background-color: #383e3f;">@@ -53,9 +53,9 @@</span><span style="color: #91b9c7; background-color: #383e3f;"> void perf_init() {</span>
+<span style="color: #697375;">     /* Initialize our perf_event_attr, representing one counter to be read. */</span>
+<span style="color: #697375;">     static struct perf_event_attr attr_cache_miss;</span>
+<span style="color: #697375;">     /* To use with real ARM hardware: */</span>
+<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    perf_attr_init(&amp;attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);</span>
+<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    </span><span style="color: #EEDCC1; background-color: #4FA8A3;">//</span><span style="color: #EEDCC1; background-color: #39855f;"> perf_attr_init(&amp;attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);</span>
+<span style="color: #697375;">     /* To use with gem5 full-system ARM: */</span>
+<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    </span><span style="color: #EEDCC1; background-color: #C74A4D;">//</span><span style="color: #EEDCC1; background-color: #a0586c;"> perf_attr_init(&amp;attr_cache_miss, 0x33);</span>
+<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    perf_attr_init(&amp;attr_cache_miss, 0x33);</span>
+<span style="color: #697375;">     /* Open the file descriptor corresponding to this counter. The counter</span>
+<span style="color: #697375;">        should start at this moment. */</span>
+<span style="color: #697375;">     if ((perf_fd_cache_miss = syscall(__NR_perf_event_open, &amp;attr_cache_miss, 0, -1, -1, 0)) == -1)</span>
+<span style="background-color: #383e3f;">@@ -64,8 +64,8 @@</span><span style="color: #91b9c7; background-color: #383e3f;"> void perf_init() {</span>
+<span style="color: #697375;">     /* Same here. */</span>
+<span style="color: #697375;">     static struct perf_event_attr attr_branch_miss;</span>
+<span style="color: #697375;">     /* To use with real ARM hardware: */</span>
+<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    perf_attr_init(&amp;attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);</span>
+<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    </span><span style="color: #EEDCC1; background-color: #4FA8A3;">//</span><span style="color: #EEDCC1; background-color: #39855f;"> perf_attr_init(&amp;attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);</span>
+<span style="color: #697375;">     /* To use with gem5 full-system ARM: */</span>
+<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    </span><span style="color: #EEDCC1; background-color: #C74A4D;">//</span><span style="color: #EEDCC1; background-color: #a0586c;"> perf_attr_init(&amp;attr_branch_miss, 0x10);</span>
+<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    perf_attr_init(&amp;attr_branch_miss, 0x10);</span>
+<span style="color: #697375;">     if ((perf_fd_branch_miss = syscall(__NR_perf_event_open, &amp;attr_branch_miss, 0, -1, -1, 0)) == -1)</span>
+<span style="color: #697375;">         fprintf(stderr, "perf_event_open fail %d %d: %s\n", perf_fd_branch_miss, errno, strerror(errno));</span>
+ }
+</pre>
+</div>
 </div>
 </div>
 
+<div id="outline-container-orgd3b4eef" class="outline-3">
+<h3 id="orgd3b4eef"><span class="section-number-3">3.2</span> How to Setup gem5</h3>
+</div>
+
 <div id="outline-container-howto_gem5" class="outline-3">
-<h3 id="howto_gem5"><span class="section-number-3">3.2</span> How to Simulate Spectre with gem5</h3>
+<h3 id="howto_gem5"><span class="section-number-3">3.3</span> How to Simulate Spectre with gem5</h3>
 <div class="outline-text-3" id="text-howto_gem5">
 </div>
 </div>
 
 <div id="outline-container-howto_konata" class="outline-3">
-<h3 id="howto_konata"><span class="section-number-3">3.3</span> How to Visualize the Pipeline of a gem5 Processor with Konata</h3>
+<h3 id="howto_konata"><span class="section-number-3">3.4</span> How to Visualize the Pipeline of a gem5 Processor with Konata</h3>
 <div class="outline-text-3" id="text-howto_konata">
 </div>
 </div>
 </div>
 
-<div id="outline-container-org4dbd8fb" class="outline-2">
-<h2 id="org4dbd8fb"><span class="section-number-2">4</span> Implementations</h2>
+<div id="outline-container-org22cb112" class="outline-2">
+<h2 id="org22cb112"><span class="section-number-2">4</span> Implementations</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Implementation details goes here.
 </p>
 </div>
 
-<div id="outline-container-orgc0d070f" class="outline-3">
-<h3 id="orgc0d070f"><span class="section-number-3">4.1</span> Spectre</h3>
+<div id="outline-container-org07efb87" class="outline-3">
+<h3 id="org07efb87"><span class="section-number-3">4.1</span> Spectre</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 Our implementation resides in the <code>spectre</code> directory of the repository:
 </p>
 
-<pre class="example" id="org9f523df">
+<pre class="example" id="orgeb0db2b">
 spectre
 ├── asm.c
 ├── asm.h
@@ -440,13 +488,13 @@ instructions.</li>
 </div>
 </div>
 
-<div id="outline-container-orgf438912" class="outline-3">
-<h3 id="orgf438912"><span class="section-number-3">4.2</span> gem5</h3>
+<div id="outline-container-org43ca4b1" class="outline-3">
+<h3 id="org43ca4b1"><span class="section-number-3">4.2</span> gem5</h3>
 </div>
 </div>
 
-<div id="outline-container-orgecd5ff0" class="outline-2">
-<h2 id="orgecd5ff0"><span class="section-number-2">5</span> Appendices</h2>
+<div id="outline-container-org107a35e" class="outline-2">
+<h2 id="org107a35e"><span class="section-number-2">5</span> Appendices</h2>
 <div class="outline-text-2" id="text-5">
 <ul class="org-ul">
 <li>If you are a gem5 user who experience some unresolved errors, you could see
@@ -457,7 +505,7 @@ the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html"
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-04-01 jeu. 08:56</p>
+<p class="date">Created: 2021-04-01 jeu. 09:38</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
