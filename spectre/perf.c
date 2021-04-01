@@ -39,9 +39,9 @@ static int perf_fd_branch_miss;
 static void perf_attr_init(struct perf_event_attr * attr, uint64_t config)
 {
     /* To use with real ARM hardware: */
-    // attr->type = PERF_TYPE_HARDWARE;
+    attr->type = PERF_TYPE_HARDWARE;
     /* To use with gem5 full-system ARM: */
-    attr->type = PERF_TYPE_RAW;
+    // attr->type = PERF_TYPE_RAW;
     attr->config = config;
     attr->size = sizeof(*attr);
     attr->exclude_kernel = 1;
@@ -53,9 +53,9 @@ void perf_init() {
     /* Initialize our perf_event_attr, representing one counter to be read. */
     static struct perf_event_attr attr_cache_miss;
     /* To use with real ARM hardware: */
-    // perf_attr_init(&attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);
+    perf_attr_init(&attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);
     /* To use with gem5 full-system ARM: */
-    perf_attr_init(&attr_cache_miss, 0x33);
+    // perf_attr_init(&attr_cache_miss, 0x33);
     /* Open the file descriptor corresponding to this counter. The counter
        should start at this moment. */
     if ((perf_fd_cache_miss = syscall(__NR_perf_event_open, &attr_cache_miss, 0, -1, -1, 0)) == -1)
@@ -64,9 +64,9 @@ void perf_init() {
     /* Same here. */
     static struct perf_event_attr attr_branch_miss;
     /* To use with real ARM hardware: */
-    // perf_attr_init(&attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);
+    perf_attr_init(&attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);
     /* To use with gem5 full-system ARM: */
-    perf_attr_init(&attr_branch_miss, 0x10);
+    // perf_attr_init(&attr_branch_miss, 0x10);
     if ((perf_fd_branch_miss = syscall(__NR_perf_event_open, &attr_branch_miss, 0, -1, -1, 0)) == -1)
         fprintf(stderr, "perf_event_open fail %d %d: %s\n", perf_fd_branch_miss, errno, strerror(errno));
 }
