@@ -5,9 +5,38 @@
 #+PROPERTY: header-args :eval never-export
 #+HTML_HEAD: <link rel="stylesheet" href="https://sandyuraz.com/styles/org.min.css">
 
-* Introduction
+* Compilation Errors
+  :PROPERTIES:
+  :CUSTOM_ID: compilation
+  :END:
 
-  This guide reference some gem5 errors that we had to solve during our
+** Treating Warnings as Errors
+
+   If your build fails because of some non-harmful warnings, comment the
+   ='-Werror',= line in the =SConstruct= file:
+   #+BEGIN_SRC python :eval never
+   # Treat warnings as errors but white list some warnings that we
+   # want to allow (e.g., deprecation warnings).
+   main.Append(CCFLAGS=['-Wno-error=deprecated-declarations',
+                        '-Wno-error=deprecated',
+                        #'-Werror',
+                       ])
+   #+END_SRC
+
+** Python? No such file or directory!
+
+   If your build fails because =/usr/bin/env: 'python': No such file or
+   directory=, install =python3= and/or create a symlink like this:
+   #+BEGIN_SRC bash :eval never
+   sudo ln -s /usr/bin/python3 /usr/bin/python
+   #+END_SRC
+  
+* Runtime Errors
+  :PROPERTIES:
+  :CUSTOM_ID: runtime
+  :END:
+
+  This guide reference some gem5 runtime errors that we had to solve during our
   development. This is far from a complete list, but still, it might help
   someone.
 
