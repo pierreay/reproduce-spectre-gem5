@@ -494,19 +494,103 @@
    We assume that your gem5 setup is ready to perform a full-system simulation,
    described in Section [[#howto_gem5_setup]].
 
-   The first step is to copy the Spectre binary on the =workload.img=
-   image. Use our predefined function for that:
+   *Boot*. The first step is to boot the system once, which can take up to one
+   entire hour. You will launch the simulation of our system, described in
+   Section [[#implem_gem5]], with gem5. Call gem5 with our Python script describing
+   our system, declare 4 cores and the images for the full-system simulation
+   with this command:
+
+   #+BEGIN_SRC bash :eval never
+   cd "$reproduce_repo"/gem5
+   "$gem5_repo"/build/ARM/gem5.opt -q -d 01boot \
+                                   ./RPIv4.py -v --num-cores=4 --fs \
+                                   --fs-kernel="$gem5_repo"/"$img_dir"/vmlinux.arm64 \
+                                   --fs-disk-image="$gem5_repo"/"$img_dir"/linaro-minimal-aarch64.img \
+                                   --fs-workload-image="$gem5_repo"/"$img_dir"/"$img"
+   #+END_SRC
+
+   On another shell, launch the following command to connect to your simulation
+   with =m5term= (which use =telnet=):
+   
+   #+BEGIN_SRC bash :evel never
+   "$gem5_repo"/util/term/m5term localhost 3456
+   #+END_SRC
+
+   You must now see the boot process of the simulated system. Wait for the boot
+   process to finish until you get a prompt, and then, issue the following
+   command:
+
+   #+BEGIN_SRC bash
+   m5 checkpoint
+   #+END_SRC
+
+   This will create a snapshot of the running system just after the boot
+   process in the =01boot/cpt.{timestamp}= folder. Now, you will be able to
+   restore the snapshot in a matter of second each time you want to simulate an
+   experiment, there is no need to wait for the boot process anymore (except if
+   you modify some parameters of the system in the Python files).
+
+   You can terminate your simulation. Press =C-d= to disconnect from the
+   terminal, and use the following command to kill gem5:
+
+   #+BEGIN_SRC bash
+   pkill gem5
+   #+END_SRC
+
+   *Spectre*. This time, you will be able to simulate the Spectre attack in a
+   full-system simulation. First, copy the Spectre binary on the =workload.img=
+   image. Use our predefined function (Section [[#howto_gem5_setup]]) for that:
 
    #+BEGIN_SRC bash :eval never
    cd "$reproduce_repo"
-   workload_update "$gem5_repo/$img_dir/$img" spectre/spectre
+   workload_update "$gem5_repo"/"$img_dir"/"$img" spectre/spectre
    #+END_SRC
 
-   Then, we will launch the simulation of our system, described in Section
-   [[#implem_gem5]], with gem5:
+   You know have a ready =workload.img= image with the Spectre binary
+   inside. The last step is to relaunch the simulation from the previous
+   checkpoint:
 
-   #+BEGIN_SRC bash :eval never
-   cd gem5
+   #+BEGIN_SRC bash
+   "$gem5_repo"/build/ARM/gem5.opt -q -d 02restore \
+                                      ./RPIv4.py -v --num-cores=4 --fs \
+                                      --fs-kernel="$gem5_repo"/"$img_dir"/vmlinux.arm64 \
+                                      --fs-disk-image="$gem5_repo"/"$img_dir"/linaro-minimal-aarch64.img \
+                                      --fs-workload-image="$gem5_repo"/"$img_dir"/"$img" \
+                                      --fs-restore=01boot/cpt.*
+   #+END_SRC
+
+   On another shell, you can connect to the restored simulation and wait
+   reaching the prompt (a matter of seconds or 1-2 minutes):
+
+   #+BEGIN_SRC bash :evel never
+   "$gem5_repo"/util/term/m5term localhost 3456
+   #+END_SRC
+
+   Inside the =telnet= session, you can issue these two commands to access to
+   the Spectre binary:
+
+   #+BEGIN_SRC bash
+   mkdir -p workload
+   # /dev/vdb1 correspond to the image given with the --fs-workload option.
+   mount /dev/vdb1 ./workload
+   #+END_SRC
+
+   And finally launch the Spectre attack inside the simulated system:
+
+   #+BEGIN_SRC bash
+   cd workload
+   ./spectre -m 10 -l 100 -t 999
+   #+END_SRC
+
+   To extract your result from the simulation, you can either redirect them in
+   a file on the mounted =workload.img= image, or copy-paste the terminal.
+   
+   When the Spectre attack will finish, you can terminate your
+   simulation. Press =C-d= to disconnect from the terminal, and use the
+   following command to kill gem5:
+
+   #+BEGIN_SRC bash
+   pkill gem5
    #+END_SRC
 
 ** How to Visualize the Pipeline of a gem5 Processor with Konata

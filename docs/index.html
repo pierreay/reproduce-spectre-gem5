@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-04-07 mer. 10:38 -->
+<!-- 2021-04-07 mer. 11:23 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
@@ -224,9 +224,9 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org65a11dc">1. Introduction</a></li>
-<li><a href="#org5650048">2. Repository</a></li>
-<li><a href="#org72cb97e">3. HowTo</a>
+<li><a href="#org764b732">1. Introduction</a></li>
+<li><a href="#orgab17e19">2. Repository</a></li>
+<li><a href="#org11aa26e">3. HowTo</a>
 <ul>
 <li><a href="#setup_arm">3.1. How to Setup the Native ARM System</a></li>
 <li><a href="#howto_spectre">3.2. How to Perform the Spectre Attack</a></li>
@@ -235,19 +235,19 @@
 <li><a href="#howto_konata">3.5. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#org1041c95">4. Implementations</a>
+<li><a href="#orgee31640">4. Implementations</a>
 <ul>
 <li><a href="#implem_spectre">4.1. Spectre</a></li>
 <li><a href="#implem_gem5">4.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#org166628e">5. Appendices</a></li>
+<li><a href="#org9a6d422">5. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org65a11dc" class="outline-2">
-<h2 id="org65a11dc"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-org764b732" class="outline-2">
+<h2 id="org764b732"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This web page is linked to the <i><a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf">Reproducing Spectre Attack with gem5, How To
@@ -269,8 +269,8 @@ below to:
 </div>
 </div>
 
-<div id="outline-container-org5650048" class="outline-2">
-<h2 id="org5650048"><span class="section-number-2">2</span> Repository</h2>
+<div id="outline-container-orgab17e19" class="outline-2">
+<h2 id="orgab17e19"><span class="section-number-2">2</span> Repository</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This web page is part of the repository located <a href="https://github.com/pierreay/reproduce-spectre-gem5">here</a>. See the <code>README.md</code>
@@ -279,8 +279,8 @@ file for repository organization and navigation.
 </div>
 </div>
 
-<div id="outline-container-org72cb97e" class="outline-2">
-<h2 id="org72cb97e"><span class="section-number-2">3</span> HowTo</h2>
+<div id="outline-container-org11aa26e" class="outline-2">
+<h2 id="org11aa26e"><span class="section-number-2">3</span> HowTo</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-setup_arm" class="outline-3">
@@ -371,7 +371,7 @@ First, clone the repository:
 <div class="org-src-container">
 <pre class="src src-bash">git clone https://github.com/pierreay/reproduce-spectre-gem5
 <span style="color: #697375;"># </span><span style="color: #697375;">We will use this variable to designate the repository through the hole file.</span>
-<span style="color: #47ba99;">reproducing_repo</span>=<span style="color: #fbaed2;">"$(pwd)/reproduce-spectre-gem5"</span>
+<span style="color: #47ba99;">reproducing_repo</span>=<span style="color: #fbaed2;">"$(pwd)"</span>/reproduce-spectre-gem5
 <span style="color: #91b9c7;">cd</span> <span style="color: #fbaed2;">"$reproducing_repo"</span>
 </pre>
 </div>
@@ -395,7 +395,7 @@ Test if the binary is working by displaying a useful help message:
 </pre>
 </div>
 
-<pre class="example" id="orga9c14e6">
+<pre class="example" id="orgeb6490a">
 Usage: spectre [OPTION...]
 Spectre -- A Spectre implementation useful for research
 
@@ -511,7 +511,7 @@ Clone the gem5 repository:
 <pre class="src src-bash">git clone https://gem5.googlesource.com/public/gem5
 <span style="color: #697375;"># </span><span style="color: #697375;">We will use this variable to designate the gem5 repository through the hole</span>
 <span style="color: #697375;"># </span><span style="color: #697375;">file.</span>
-<span style="color: #47ba99;">gem5_repo</span>=<span style="color: #fbaed2;">"$(pwd)/gem5"</span>
+<span style="color: #47ba99;">gem5_repo</span>=<span style="color: #fbaed2;">"$(pwd)"</span>/gem5
 <span style="color: #91b9c7;">cd</span> <span style="color: #fbaed2;">"$gem5_repo"</span>
 </pre>
 </div>
@@ -533,7 +533,7 @@ be required on the latest gem5 version). To do that, use:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-bash">git apply <span style="color: #fbaed2;">"$reproduce_repo/gem5/perf_event.patch"</span>
+<pre class="src src-bash">git apply <span style="color: #fbaed2;">"$reproduce_repo"</span>/gem5/perf_event.patch
 </pre>
 </div>
 
@@ -552,14 +552,59 @@ scons <span style="color: #47ba99;">PYTHON_CONFIG</span>=python$<span style="col
 </div>
 
 <p>
-If everything is working, you should be able to display the help of one
+If everything is working, you should be able to display the help of our
 simulation script:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-bash">build/ARM/gem5.opt -q configs/example/arm/starter_fs.py --help   
+<pre class="src src-bash">build/ARM/gem5.opt -q <span style="color: #fbaed2;">"$reproduce_repo"</span>/gem5/RPIv4.py --help   
 </pre>
 </div>
+
+<pre class="example" id="org3bfc442">
+usage: RPIv4.py [-h] [-v] [--num-cores NUM_CORES] [--se] [--fs]
+                [--fs-kernel FS_KERNEL] [--fs-disk-image FS_DISK_IMAGE]
+                [--fs-workload-image FS_WORKLOAD_IMAGE]
+                [--fs-restore FS_RESTORE]
+                [se-command [se-command ...]]
+
+Raspberry Pi 4 Model B Rev. 1.1 - Syscall emulation &amp; Full-system simulation
+Script based on a real Raspberry Pi system. It is shipped with a "reproduced"
+ARM Cortex-A72 CPU. The intended use is security research. It can be used both
+in system-call emulation or full-system simulation. For the full-system
+simulation mode only, first boot your system and create a checkpoint where the
+used CPU will be the atomic one. Only then, restore you system from your
+checkpoint, where the CPU used will be the detailed one. When passing
+filenames in arguments of the script, please be sure that your M5_PATH
+environment variable is set accordingly.
+
+positional arguments:
+  se-command            Command(s) to run (multiples commands are assigned to
+                        a dedicated core)
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -v, --verbose         Print detailed information of what is done
+  --num-cores NUM_CORES
+                        Number of CPU cores (default = 1)
+  --se                  Enable system-call emulation (must provide 'command'
+                        positional arguments)
+  --fs                  Enable full-system emulation (must provide '--fs-
+                        kernel' and '--fs-disk-image' options)
+  --fs-kernel FS_KERNEL
+                        Filename of the Linux kernel to use in full-system
+                        emulation (searched under '$M5_PATH/binaries'
+                        directory)
+  --fs-disk-image FS_DISK_IMAGE
+                        Filename of the disk image containing the system to
+                        instantiate in full-system emulation
+  --fs-workload-image FS_WORKLOAD_IMAGE
+                        Filename of the disk image containing the workload to
+                        mount in full-system emulation
+  --fs-restore FS_RESTORE
+                        Path to a folder created by "m5 checkpoint" command to
+                        use for restoration
+</pre>
 
 <p>
 Otherwise, check the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#compilation"><code>docs/gem5_errors.html</code></a> file to see if the compilation
@@ -681,23 +726,135 @@ described in Section <a href="#howto_gem5_setup">3.3</a>.
 </p>
 
 <p>
-The first step is to copy the Spectre binary on the <code>workload.img</code>
-image. Use our predefined function for that:
+<b>Boot</b>. The first step is to boot the system once, which can take up to one
+entire hour. You will launch the simulation of our system, described in
+Section <a href="#implem_gem5">4.2</a>, with gem5. Call gem5 with our Python script describing
+our system, declare 4 cores and the images for the full-system simulation
+with this command:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> <span style="color: #fbaed2;">"$reproduce_repo"</span>
-workload_update <span style="color: #fbaed2;">"$gem5_repo/$img_dir/$img"</span> spectre/spectre
+<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> <span style="color: #fbaed2;">"$reproduce_repo"</span>/gem5
+<span style="color: #fbaed2;">"$gem5_repo"</span>/build/ARM/gem5.opt -q -d <span style="color: #ef6787;">01boot</span> <span style="color: #fbaed2;">\</span>
+                                ./RPIv4.py -v --num-cores=<span style="color: #ef6787;">4</span> --fs <span style="color: #fbaed2;">\</span>
+                                --fs-kernel=<span style="color: #fbaed2;">"$gem5_repo"</span>/<span style="color: #fbaed2;">"$img_dir"</span>/vmlinux.arm64 <span style="color: #fbaed2;">\</span>
+                                --fs-disk-image=<span style="color: #fbaed2;">"$gem5_repo"</span>/<span style="color: #fbaed2;">"$img_dir"</span>/linaro-minimal-aarch64.img <span style="color: #fbaed2;">\</span>
+                                --fs-workload-image=<span style="color: #fbaed2;">"$gem5_repo"</span>/<span style="color: #fbaed2;">"$img_dir"</span>/<span style="color: #fbaed2;">"$img"</span>
 </pre>
 </div>
 
 <p>
-Then, we will launch the simulation of our system, described in Section
-<a href="#implem_gem5">4.2</a>, with gem5:
+On another shell, launch the following command to connect to your simulation
+with <code>m5term</code> (which use <code>telnet</code>):
 </p>
 
 <div class="org-src-container">
-<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> gem5
+<pre class="src src-bash"><span style="color: #fbaed2;">"$gem5_repo"</span>/util/term/m5term localhost <span style="color: #ef6787;">3456</span>
+</pre>
+</div>
+
+<p>
+You must now see the boot process of the simulated system. Wait for the boot
+process to finish until you get a prompt, and then, issue the following
+command:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">m5 checkpoint
+</pre>
+</div>
+
+<p>
+This will create a snapshot of the running system just after the boot
+process in the <code>01boot/cpt.{timestamp}</code> folder. Now, you will be able to
+restore the snapshot in a matter of second each time you want to simulate an
+experiment, there is no need to wait for the boot process anymore (except if
+you modify some parameters of the system in the Python files).
+</p>
+
+<p>
+You can terminate your simulation. Press <code>C-d</code> to disconnect from the
+terminal, and use the following command to kill gem5:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">pkill gem5
+</pre>
+</div>
+
+<p>
+<b>Spectre</b>. This time, you will be able to simulate the Spectre attack in a
+full-system simulation. First, copy the Spectre binary on the <code>workload.img</code>
+image. Use our predefined function (Section <a href="#howto_gem5_setup">3.3</a>) for that:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> <span style="color: #fbaed2;">"$reproduce_repo"</span>
+workload_update <span style="color: #fbaed2;">"$gem5_repo"</span>/<span style="color: #fbaed2;">"$img_dir"</span>/<span style="color: #fbaed2;">"$img"</span> spectre/spectre
+</pre>
+</div>
+
+<p>
+You know have a ready <code>workload.img</code> image with the Spectre binary
+inside. The last step is to relaunch the simulation from the previous
+checkpoint:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #fbaed2;">"$gem5_repo"</span>/build/ARM/gem5.opt -q -d <span style="color: #ef6787;">02restore</span> <span style="color: #fbaed2;">\</span>
+                                   ./RPIv4.py -v --num-cores=<span style="color: #ef6787;">4</span> --fs <span style="color: #fbaed2;">\</span>
+                                   --fs-kernel=<span style="color: #fbaed2;">"$gem5_repo"</span>/<span style="color: #fbaed2;">"$img_dir"</span>/vmlinux.arm64 <span style="color: #fbaed2;">\</span>
+                                   --fs-disk-image=<span style="color: #fbaed2;">"$gem5_repo"</span>/<span style="color: #fbaed2;">"$img_dir"</span>/linaro-minimal-aarch64.img <span style="color: #fbaed2;">\</span>
+                                   --fs-workload-image=<span style="color: #fbaed2;">"$gem5_repo"</span>/<span style="color: #fbaed2;">"$img_dir"</span>/<span style="color: #fbaed2;">"$img"</span> <span style="color: #fbaed2;">\</span>
+                                   --fs-restore=<span style="color: #ef6787;">01boot/cpt.*</span>
+</pre>
+</div>
+
+<p>
+On another shell, you can connect to the restored simulation and wait
+reaching the prompt (a matter of seconds or 1-2 minutes):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #fbaed2;">"$gem5_repo"</span>/util/term/m5term localhost <span style="color: #ef6787;">3456</span>
+</pre>
+</div>
+
+<p>
+Inside the <code>telnet</code> session, you can issue these two commands to access to
+the Spectre binary:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">mkdir -p workload
+<span style="color: #697375;"># </span><span style="color: #697375;">/dev/vdb1 correspond to the image given with the --fs-workload option.</span>
+mount /dev/vdb1 ./workload
+</pre>
+</div>
+
+<p>
+And finally launch the Spectre attack inside the simulated system:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> workload
+./spectre -m <span style="color: #ef6787;">10</span> -l <span style="color: #ef6787;">100</span> -t <span style="color: #ef6787;">999</span>
+</pre>
+</div>
+
+<p>
+To extract your result from the simulation, you can either redirect them in
+a file on the mounted <code>workload.img</code> image, or copy-paste the terminal.
+</p>
+
+<p>
+When the Spectre attack will finish, you can terminate your
+simulation. Press <code>C-d</code> to disconnect from the terminal, and use the
+following command to kill gem5:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">pkill gem5
 </pre>
 </div>
 </div>
@@ -710,8 +867,8 @@ Then, we will launch the simulation of our system, described in Section
 </div>
 </div>
 
-<div id="outline-container-org1041c95" class="outline-2">
-<h2 id="org1041c95"><span class="section-number-2">4</span> Implementations</h2>
+<div id="outline-container-orgee31640" class="outline-2">
+<h2 id="orgee31640"><span class="section-number-2">4</span> Implementations</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Implementation details goes here.
@@ -725,7 +882,7 @@ Implementation details goes here.
 Our implementation resides in the <code>spectre</code> directory of the repository:
 </p>
 
-<pre class="example" id="org73a7443">
+<pre class="example" id="org4dbc046">
 spectre
 ├── asm.c
 ├── asm.h
@@ -775,8 +932,8 @@ To understand what the patch does and how it works, see our corresponding
 </div>
 </div>
 
-<div id="outline-container-org166628e" class="outline-2">
-<h2 id="org166628e"><span class="section-number-2">5</span> Appendices</h2>
+<div id="outline-container-org9a6d422" class="outline-2">
+<h2 id="org9a6d422"><span class="section-number-2">5</span> Appendices</h2>
 <div class="outline-text-2" id="text-5">
 <ul class="org-ul">
 <li>If you are a gem5 user who experience some unresolved errors, you could
@@ -787,7 +944,7 @@ check the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-04-07 mer. 10:38</p>
+<p class="date">Created: 2021-04-07 mer. 11:23</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
