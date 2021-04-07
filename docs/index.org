@@ -92,10 +92,13 @@
 
    #+BEGIN_SRC bash :eval never
    git clone https://github.com/pierreay/reproduce-spectre-gem5
-   cd reproduce-spectre-gem5
+   # We will use this variable to designate the repository through the hole file.
+   reproducing_repo="$(pwd)/reproduce-spectre-gem5"
+   cd "$reproducing_repo"
    #+END_SRC
 
-   Simply use the =Makefile= to compile our implementation:
+   Simply use the =Makefile= to compile our implementation, described in
+   Section [[#implem_spectre]]:
     
    #+BEGIN_SRC bash :eval never
    cd spectre && make
@@ -206,6 +209,9 @@
    #+END_SRC
     
 ** How to Setup gem5 for a Full-System Simulation
+   :PROPERTIES:
+   :CUSTOM_ID: howto_gem5_setup
+   :END:
 
    To reproduce this work, you will need:
    - A working [[https://www.gem5.org/getting_started/][gem5]] installation. We used gem5 v20.0.
@@ -213,11 +219,10 @@
      used the [[http://dist.gem5.org/dist/current/arm/disks/linaro-minimal-aarch64.img.bz2][64-bit Linaro Minimal v7.4.0 (based on Ubuntu)]] and the [[http://dist.gem5.org/dist/current/arm/aarch-system-201901106.tar.bz2][ARM64
      Linux kernel v4.18.0]] images provided by gem5's developers.
 
-   Here, you can either:
-   - Follow the steps on the gem5 website to get the latest version of it and
-     use the new recommended methods (e.g., Docker container). You may have to
-     adapt our work to this new version, and the results may not be the same.
-   - Reproduce exactly what we did, with a bit of tinkering.
+   Note that this gem5 version and the images are now obsolete. You can of
+   course follow our steps, but then for a new research, it would be better to
+   use the latest gem5 version and images with the new recommended methods
+   (e.g., Docker container).
 
    First, install the recommended packages:
 
@@ -231,7 +236,10 @@
 
    #+BEGIN_SRC bash :eval never
    git clone https://gem5.googlesource.com/public/gem5
-   cd gem5
+   # We will use this variable to designate the gem5 repository through the hole
+   # file.
+   gem5_repo="$(pwd)/gem5"
+   cd "$gem5_repo"
    #+END_SRC
 
    Checkout the commit for version 20.0:
@@ -316,6 +324,7 @@
     workload_update() {
         dev=$(sudo losetup -f)
         mnt=/mnt/workload
+        # Get arguments.
         img="$1"
         shift
         # Create the mount folder and the loop device.
@@ -353,6 +362,9 @@
   Implementation details goes here.
 
 ** Spectre
+   :PROPERTIES:
+   :CUSTOM_ID: implem_spectre
+   :END:
    
    Our implementation resides in the =spectre= directory of the repository:
 
