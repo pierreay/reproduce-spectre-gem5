@@ -387,8 +387,8 @@ def systemCreate(args):
                 # "ArmPMU.py".
                 isa.pmu.addArchEvents(
                     cpu=cpu, dtb=cpu.dtb, itb=cpu.itb,
-                    icache=getattr(cpu, "dcache", None),
-                    dcache=getattr(cpu, "icache", None),
+                    icache=getattr(cpu, "icache", None),
+                    dcache=getattr(cpu, "dcache", None),
                     l2cache=getattr(system.cpu_cluster, "l2", None))
                 # Add custom events.
                 # 0x33 corresponds to the "0x0033, LL_CACHE_MISS" common microarchitectural event.
