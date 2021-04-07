@@ -525,7 +525,7 @@
    #+END_SRC
 
    This will create a snapshot of the running system just after the boot
-   process in the =01boot/cpt.{timestamp}= folder. Now, you will be able to
+   process in the =01boot/cpt.{ticknumber}= folder. Now, you will be able to
    restore the snapshot in a matter of second each time you want to simulate an
    experiment, there is no need to wait for the boot process anymore (except if
    you modify some parameters of the system in the Python files).
@@ -597,6 +597,71 @@
    :PROPERTIES:
    :CUSTOM_ID: howto_konata
    :END:
+
+   Konata is an external program allowing to see graphically the instructions
+   executed in the pipeline of a simulated processor. The first thing to do is
+   to download the pre-compiled binary from its [[https://github.com/shioyadan/Konata][official repository]]:
+
+   #+BEGIN_SRC bash
+   mkdir konata && cd konata
+   konata_dir=$(pwd)/konata-linux-x64
+   wget -O - 'https://github.com/shioyadan/Konata/releases/download/v0.34/konata-linux-x64.tar.gz' | tar -xz
+   #+END_SRC
+
+   In order to visualize the pipeline, you'll have to:
+   1. Find which part of the simulation you want to see (otherwise the generated data will be too large),
+   2. Run this part of the simulation with specific flags,
+   3. Open the generated data in Konata.
+   
+   Firstly, to determine which portion of the simulation you want to see with
+   Konata, you'll have to run the simulation once without any special flag and
+   stop it (with =C-c=) at the time where the interesting part is starting. For
+   example, in our experiment, the interesting part is the core of the Spectre
+   attack. A possibility is to put a =printf= in your code just before this
+   part and stop the simulation when you see the output text.
+
+   When stopping the simulation, you will see a message like this one:
+
+   #+BEGIN_EXAMPLE
+   Exiting @ tick 3266927000 because user interrupt received
+   #+END_EXAMPLE
+
+   Here, 3266927000 is the number of tick we want to start the monitoring of
+   executed instruction. We will refer to it as src_bash[:eval never :exports
+   code]{$ticknumber}.
+   
+   Then, you'll have to run a simulation with the =--debug-flags=O3PipeView
+   --debug-file=pipeview.txt= flags passed to the gem5 binary and the
+   =--debug-start=$ticknumber= set accordingly to the previous step:
+   
+   #+BEGIN_SRC bash :eval never
+   "$gem5_repo"/build/ARM/gem5.opt -q \
+               --debug-flags=O3PipeView --debug-file=pipeview.txt --debug-start=$ticknumber \
+               "$reproduce_repo"/gem5/RPIv4.py -v --se
+               "$reproduce_repo/spectre/spectre -l 100"
+   #+END_SRC
+
+   When the simulation is over (or when you stopped it because it past the last
+   point of interest), you just have to launch the graphical interface of
+   Konata by issuing the src_bash[:eval never :exports
+   code]{"$konata_dir/konata"} command, click on =File= and search for the
+   =pipeview.txt= file generated with gem5 in the simulation folder.
+
+   Note that gem5 is able to output a large number of information from every
+   element of the system. For instance, during our work, we used to trace
+   instruction execution, which output the state of the processor along with
+   the executed instruction, by using the "src_bash[:exports code :eval
+   never]{--debug-flags=O3CPU,Exec}" flag for the gem5 binary. We also used the
+   ="$gem5_repo"/util/tracediff= binary, which allows to navigate in a =diff=
+   view of the instructions executed between two simulation with different
+   parameters, with this command:
+
+   #+BEGIN_SRC bash
+   "$gem5_repo"/util/tracediff \
+               "$gem5_repo"/build/ARM/gem5.opt -q --debug-flags=Exec,-ExecSymbol \
+               "$gem5_repo"/configs/example/arm/starter_se.py \
+               "\"$reproduce_repo/spectre/spectre -l 100\"|\"$reproduce_repo/spectre/spectre -l 50\""
+   #+END_SRC
 
 * Implementations
 
