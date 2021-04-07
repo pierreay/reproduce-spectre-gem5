@@ -349,13 +349,58 @@
    scons PYTHON_CONFIG=python$py_version-config build/$arch/gem5.$mode -j $cores
    #+END_SRC
 
-    If everything is working, you should be able to display the help of one
+    If everything is working, you should be able to display the help of our
     simulation script:
 
     #+BEGIN_SRC bash :eval never
-    build/ARM/gem5.opt -q configs/example/arm/starter_fs.py --help   
+    build/ARM/gem5.opt -q "$reproduce_repo"/gem5/RPIv4.py --help   
     #+END_SRC
 
+    #+BEGIN_EXAMPLE
+    usage: RPIv4.py [-h] [-v] [--num-cores NUM_CORES] [--se] [--fs]
+                    [--fs-kernel FS_KERNEL] [--fs-disk-image FS_DISK_IMAGE]
+                    [--fs-workload-image FS_WORKLOAD_IMAGE]
+                    [--fs-restore FS_RESTORE]
+                    [se-command [se-command ...]]
+
+    Raspberry Pi 4 Model B Rev. 1.1 - Syscall emulation & Full-system simulation
+    Script based on a real Raspberry Pi system. It is shipped with a "reproduced"
+    ARM Cortex-A72 CPU. The intended use is security research. It can be used both
+    in system-call emulation or full-system simulation. For the full-system
+    simulation mode only, first boot your system and create a checkpoint where the
+    used CPU will be the atomic one. Only then, restore you system from your
+    checkpoint, where the CPU used will be the detailed one. When passing
+    filenames in arguments of the script, please be sure that your M5_PATH
+    environment variable is set accordingly.
+
+    positional arguments:
+      se-command            Command(s) to run (multiples commands are assigned to
+                            a dedicated core)
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      -v, --verbose         Print detailed information of what is done
+      --num-cores NUM_CORES
+                            Number of CPU cores (default = 1)
+      --se                  Enable system-call emulation (must provide 'command'
+                            positional arguments)
+      --fs                  Enable full-system emulation (must provide '--fs-
+                            kernel' and '--fs-disk-image' options)
+      --fs-kernel FS_KERNEL
+                            Filename of the Linux kernel to use in full-system
+                            emulation (searched under '$M5_PATH/binaries'
+                            directory)
+      --fs-disk-image FS_DISK_IMAGE
+                            Filename of the disk image containing the system to
+                            instantiate in full-system emulation
+      --fs-workload-image FS_WORKLOAD_IMAGE
+                            Filename of the disk image containing the workload to
+                            mount in full-system emulation
+      --fs-restore FS_RESTORE
+                            Path to a folder created by "m5 checkpoint" command to
+                            use for restoration
+    #+END_EXAMPLE
+    
     Otherwise, check the [[https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#compilation][=docs/gem5_errors.html=]] file to see if the compilation
     error has already been encountered.
     
