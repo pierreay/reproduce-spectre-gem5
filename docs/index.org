@@ -159,55 +159,66 @@
    done
    #+END_SRC
 
-   Later, if you want to generate the metrics on gem5, you will have to
-   recompile the binary with the following patch (remind to save the previously
-   compiled binary). Use src_bash[:eval never :exports code]{git apply
-   spectre/perf.c.patch} or comment/uncomment the few lines yourself (this is
-   still a =TODO= item in the source code):
+   *Optional*. If you want to obtain the =perf_event= metrics under a gem5
+   simulation, you will have to recompile the Spectre binary with a patch. This
+   is still a =TODO= item in the source code. To do that, use =git-apply= to
+   apply the patch, save the previously compiled binary with another name and
+   relaunch =make=:
 
-   #+BEGIN_SRC diff :tangle ../spectre/perf.c.patch
-   diff --git i/spectre/perf.c w/spectre/perf.c
-   index 3b89ee7..c648e28 100644
-   --- i/spectre/perf.c
-   +++ w/spectre/perf.c
-   @@ -39,9 +39,9 @@ static int perf_fd_branch_miss;
+    #+BEGIN_SRC bash :eval never
+    # Apply the patch
+    cd "$reproduce_repo"
+    git apply spectre/perf.c.patch
+    # Save the previous binary
+    cd spectre
+    mv spectre spectre_native
+    # Compile the new Spectre
+    make
+    #+END_SRC
+
+    #+BEGIN_SRC diff :tangle ../spectre/perf.c.patch :exports none
+    diff --git i/spectre/perf.c w/spectre/perf.c
+    index 3b89ee7..c648e28 100644
+    --- i/spectre/perf.c
+    +++ w/spectre/perf.c
+    @@ -39,9 +39,9 @@ static int perf_fd_branch_miss;
     static void perf_attr_init(struct perf_event_attr * attr, uint64_t config)
     {
-        /* To use with real ARM hardware: */
-   -    attr->type = PERF_TYPE_HARDWARE;
-   +    // attr->type = PERF_TYPE_HARDWARE;
-        /* To use with gem5 full-system ARM: */
-   -    // attr->type = PERF_TYPE_RAW;
-   +    attr->type = PERF_TYPE_RAW;
-        attr->config = config;
-        attr->size = sizeof(*attr);
-        attr->exclude_kernel = 1;
-   @@ -53,9 +53,9 @@ void perf_init() {
-        /* Initialize our perf_event_attr, representing one counter to be read. */
-        static struct perf_event_attr attr_cache_miss;
-        /* To use with real ARM hardware: */
-   -    perf_attr_init(&attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);
-   +    // perf_attr_init(&attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);
-        /* To use with gem5 full-system ARM: */
-   -    // perf_attr_init(&attr_cache_miss, 0x33);
-   +    perf_attr_init(&attr_cache_miss, 0x33);
-        /* Open the file descriptor corresponding to this counter. The counter
-           should start at this moment. */
-        if ((perf_fd_cache_miss = syscall(__NR_perf_event_open, &attr_cache_miss, 0, -1, -1, 0)) == -1)
-   @@ -64,8 +64,8 @@ void perf_init() {
-        /* Same here. */
-        static struct perf_event_attr attr_branch_miss;
-        /* To use with real ARM hardware: */
-   -    perf_attr_init(&attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);
-   +    // perf_attr_init(&attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);
-        /* To use with gem5 full-system ARM: */
-   -    // perf_attr_init(&attr_branch_miss, 0x10);
-   +    perf_attr_init(&attr_branch_miss, 0x10);
-        if ((perf_fd_branch_miss = syscall(__NR_perf_event_open, &attr_branch_miss, 0, -1, -1, 0)) == -1)
-            fprintf(stderr, "perf_event_open fail %d %d: %s\n", perf_fd_branch_miss, errno, strerror(errno));
+    /* To use with real ARM hardware: */
+    -    attr->type = PERF_TYPE_HARDWARE;
+    +    // attr->type = PERF_TYPE_HARDWARE;
+    /* To use with gem5 full-system ARM: */
+    -    // attr->type = PERF_TYPE_RAW;
+    +    attr->type = PERF_TYPE_RAW;
+    attr->config = config;
+    attr->size = sizeof(*attr);
+    attr->exclude_kernel = 1;
+    @@ -53,9 +53,9 @@ void perf_init() {
+    /* Initialize our perf_event_attr, representing one counter to be read. */
+    static struct perf_event_attr attr_cache_miss;
+    /* To use with real ARM hardware: */
+    -    perf_attr_init(&attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);
+    +    // perf_attr_init(&attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);
+    /* To use with gem5 full-system ARM: */
+    -    // perf_attr_init(&attr_cache_miss, 0x33);
+    +    perf_attr_init(&attr_cache_miss, 0x33);
+    /* Open the file descriptor corresponding to this counter. The counter
+    should start at this moment. */
+    if ((perf_fd_cache_miss = syscall(__NR_perf_event_open, &attr_cache_miss, 0, -1, -1, 0)) == -1)
+    @@ -64,8 +64,8 @@ void perf_init() {
+    /* Same here. */
+    static struct perf_event_attr attr_branch_miss;
+    /* To use with real ARM hardware: */
+    -    perf_attr_init(&attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);
+    +    // perf_attr_init(&attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);
+    /* To use with gem5 full-system ARM: */
+    -    // perf_attr_init(&attr_branch_miss, 0x10);
+    +    perf_attr_init(&attr_branch_miss, 0x10);
+    if ((perf_fd_branch_miss = syscall(__NR_perf_event_open, &attr_branch_miss, 0, -1, -1, 0)) == -1)
+    fprintf(stderr, "perf_event_open fail %d %d: %s\n", perf_fd_branch_miss, errno, strerror(errno));
     }
-   #+END_SRC
-    
+    #+END_SRC
+
 ** How to Setup gem5 for a Full-System Simulation
    :PROPERTIES:
    :CUSTOM_ID: howto_gem5_setup
@@ -246,6 +257,85 @@
 
    #+BEGIN_SRC bash :eval never
    git checkout v20.0.0.0
+   #+END_SRC
+
+   *Optional*. If you want to obtain the =perf_event= metrics under a gem5
+   simulation, you will have to apply a patch from our repository to the gem5
+   source code to enable =perf_event= on the gem5 side (note that it should not
+   be required on the latest gem5 version). To do that, use:
+
+   #+BEGIN_SRC bash
+   git apply "$reproduce_repo/gem5/perf_event.patch"
+   #+END_SRC
+
+   #+BEGIN_SRC diff :tangle ../gem5/perf_event.patch :exports none
+   diff --git i/src/arch/arm/ArmISA.py w/src/arch/arm/ArmISA.py
+   index 2641ec3fb..3d85c1b75 100644
+   --- i/src/arch/arm/ArmISA.py
+   +++ w/src/arch/arm/ArmISA.py
+   @@ -36,6 +36,7 @@
+   from m5.params import *
+   from m5.proxy import *
+
+   +from m5.SimObject import SimObject
+   from m5.objects.ArmPMU import ArmPMU
+   from m5.objects.ArmSystem import SveVectorLength
+   from m5.objects.BaseISA import BaseISA
+   @@ -49,6 +50,8 @@ class ArmISA(BaseISA):
+   cxx_class = 'ArmISA::ISA'
+   cxx_header = "arch/arm/isa.hh"
+
+   +    generateDeviceTree = SimObject.recurseDeviceTree
+   +
+   system = Param.System(Parent.any, "System this ISA object belongs to")
+
+   pmu = Param.ArmPMU(NULL, "Performance Monitoring Unit")
+   diff --git i/src/arch/arm/ArmPMU.py w/src/arch/arm/ArmPMU.py
+   index 047e908b3..58553fbf9 100644
+   --- i/src/arch/arm/ArmPMU.py
+   +++ w/src/arch/arm/ArmPMU.py
+   @@ -40,6 +40,7 @@ from m5.params import *
+   from m5.params import isNullPointer
+   from m5.proxy import *
+   from m5.objects.Gic import ArmInterruptPin
+   +from m5.util.fdthelper import *
+
+   class ProbeEvent(object):
+   def __init__(self, pmu, _eventId, obj, *listOfNames):
+   @@ -76,6 +77,17 @@ class ArmPMU(SimObject):
+
+   _events = None
+
+   +    def generateDeviceTree(self, state):
+   +        node = FdtNode("pmu")
+   +        node.appendCompatible("arm,armv8-pmuv3")
+   +        # gem5 uses GIC controller interrupt notation, where PPI interrupts
+   +        # start to 16. However, the Linux kernel start from 0, and used a tag
+   +        # (set to 1) to indicate the PPI interrupt type.
+   +        node.append(FdtPropertyWords("interrupts", [
+   +            1, int(self.interrupt.num) - 16, 0xf04
+   +        ]))
+   +        yield node
+   +
+   def addEvent(self, newObject):
+   if not (isinstance(newObject, ProbeEvent)
+   or isinstance(newObject, SoftwareIncrement)):
+   diff --git i/src/cpu/BaseCPU.py w/src/cpu/BaseCPU.py
+   index ab70d1d7f..66a49a038 100644
+   --- i/src/cpu/BaseCPU.py
+   +++ w/src/cpu/BaseCPU.py
+   @@ -302,6 +302,11 @@ class BaseCPU(ClockedObject):
+   node.appendPhandle(phandle_key)
+   cpus_node.append(node)
+
+   +        # Generate nodes from the BaseCPU children (and don't add them as
+   +        # subnode). Please note: this is mainly needed for the ISA class.
+   +        for child_node in self.recurseDeviceTree(state):
+   +            yield child_node
+   +
+   yield cpus_node
+
+   def __init__(self, **kwargs):
    #+END_SRC
 
    And finally, compile it in optimized mode (=opt=), for the ARM architecture
@@ -346,11 +436,33 @@
     in the simulated system by gem5 itself, and the files in the workload image
     will be accessible in read/write. This is an efficient and handy way to
     communicate with a gem5 simulation.
-    
+
 ** How to Simulate Spectre with gem5
    :PROPERTIES:
    :CUSTOM_ID: howto_gem5
    :END:
+
+   We assume that you are able to compile and know how to perform a Spectre
+   attack with our binary (at least in theory), described in Section
+   [[#howto_spectre]].
+
+   We assume that your gem5 setup is ready to perform a full-system simulation,
+   described in Section [[#howto_gem5_setup]].
+
+   The first step is to copy the Spectre binary on the =workload.img=
+   image. Use our predefined function for that:
+
+   #+BEGIN_SRC bash :eval never
+   cd "$reproduce_repo"
+   workload_update "$gem5_repo/$img_dir/$img" spectre/spectre
+   #+END_SRC
+
+   Then, we will launch the simulation of our system, described in Section
+   [[#implem_gem5]], with gem5:
+
+   #+BEGIN_SRC bash :eval never
+   cd gem5
+   #+END_SRC
 
 ** How to Visualize the Pipeline of a gem5 Processor with Konata
    :PROPERTIES:
@@ -403,7 +515,13 @@
      instructions.
 
 ** gem5
-   
+   :PROPERTIES:
+   :CUSTOM_ID: implem_gem5
+   :END:
+
+   To understand what the patch does and how it works, see our corresponding
+   [[https://stackoverflow.com/questions/63988672/using-perf-event-with-the-arm-pmu-inside-gem5][StackOverflow post]] or our [[https://www.mail-archive.com/gem5-users@gem5.org/msg18401.html][ticket on the gem5 mailing list]].
+
 * Appendices
 
   - If you are a gem5 user who experience some unresolved errors, you could

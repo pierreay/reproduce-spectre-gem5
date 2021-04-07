@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-04-01 jeu. 16:51 -->
+<!-- 2021-04-07 mer. 10:38 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
@@ -52,7 +52,7 @@
     padding: 3px;
     border: 1px solid black;
   }
-  pre.src:hover:before { display: inline;}
+  pre.src:hover:before { display: inline; margin-top: 14px;}
   /* Languages per Org manual */
   pre.src-asymptote:before { content: 'Asymptote'; }
   pre.src-awk:before { content: 'Awk'; }
@@ -224,30 +224,30 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents">
 <ul>
-<li><a href="#org4507070">1. Introduction</a></li>
-<li><a href="#org93a1673">2. Repository</a></li>
-<li><a href="#org4c89cfc">3. HowTo</a>
+<li><a href="#org65a11dc">1. Introduction</a></li>
+<li><a href="#org5650048">2. Repository</a></li>
+<li><a href="#org72cb97e">3. HowTo</a>
 <ul>
 <li><a href="#setup_arm">3.1. How to Setup the Native ARM System</a></li>
 <li><a href="#howto_spectre">3.2. How to Perform the Spectre Attack</a></li>
-<li><a href="#orgb21e596">3.3. How to Setup gem5 for a Full-System Simulation</a></li>
+<li><a href="#howto_gem5_setup">3.3. How to Setup gem5 for a Full-System Simulation</a></li>
 <li><a href="#howto_gem5">3.4. How to Simulate Spectre with gem5</a></li>
 <li><a href="#howto_konata">3.5. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#orgcce97f4">4. Implementations</a>
+<li><a href="#org1041c95">4. Implementations</a>
 <ul>
-<li><a href="#org4a53277">4.1. Spectre</a></li>
-<li><a href="#org25efdcb">4.2. gem5</a></li>
+<li><a href="#implem_spectre">4.1. Spectre</a></li>
+<li><a href="#implem_gem5">4.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#orgb1d4d94">5. Appendices</a></li>
+<li><a href="#org166628e">5. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org4507070" class="outline-2">
-<h2 id="org4507070"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-org65a11dc" class="outline-2">
+<h2 id="org65a11dc"><span class="section-number-2">1</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 This web page is linked to the <i><a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf">Reproducing Spectre Attack with gem5, How To
@@ -269,8 +269,8 @@ below to:
 </div>
 </div>
 
-<div id="outline-container-org93a1673" class="outline-2">
-<h2 id="org93a1673"><span class="section-number-2">2</span> Repository</h2>
+<div id="outline-container-org5650048" class="outline-2">
+<h2 id="org5650048"><span class="section-number-2">2</span> Repository</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 This web page is part of the repository located <a href="https://github.com/pierreay/reproduce-spectre-gem5">here</a>. See the <code>README.md</code>
@@ -279,8 +279,8 @@ file for repository organization and navigation.
 </div>
 </div>
 
-<div id="outline-container-org4c89cfc" class="outline-2">
-<h2 id="org4c89cfc"><span class="section-number-2">3</span> HowTo</h2>
+<div id="outline-container-org72cb97e" class="outline-2">
+<h2 id="org72cb97e"><span class="section-number-2">3</span> HowTo</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-setup_arm" class="outline-3">
@@ -370,12 +370,15 @@ First, clone the repository:
 
 <div class="org-src-container">
 <pre class="src src-bash">git clone https://github.com/pierreay/reproduce-spectre-gem5
-<span style="color: #91b9c7;">cd</span> reproduce-spectre-gem5
+<span style="color: #697375;"># </span><span style="color: #697375;">We will use this variable to designate the repository through the hole file.</span>
+<span style="color: #47ba99;">reproducing_repo</span>=<span style="color: #fbaed2;">"$(pwd)/reproduce-spectre-gem5"</span>
+<span style="color: #91b9c7;">cd</span> <span style="color: #fbaed2;">"$reproducing_repo"</span>
 </pre>
 </div>
 
 <p>
-Simply use the <code>Makefile</code> to compile our implementation:
+Simply use the <code>Makefile</code> to compile our implementation, described in
+Section <a href="#implem_spectre">4.1</a>:
 </p>
 
 <div class="org-src-container">
@@ -392,7 +395,7 @@ Test if the binary is working by displaying a useful help message:
 </pre>
 </div>
 
-<pre class="example" id="org5e6fa63">
+<pre class="example" id="orga9c14e6">
 Usage: spectre [OPTION...]
 Spectre -- A Spectre implementation useful for research
 
@@ -448,61 +451,30 @@ relaunch the others with the <code>-q</code> flag to suppress header line:
 </div>
 
 <p>
-Later, if you want to generate the metrics on gem5, you will have to
-recompile the binary with the following patch (remind to save the previously
-compiled binary). Use <code class="src src-bash">git apply spectre/perf.c.patch</code> or comment/uncomment the few lines yourself (this is
-still a <code>TODO</code> item in the source code):
+<b>Optional</b>. If you want to obtain the <code>perf_event</code> metrics under a gem5
+simulation, you will have to recompile the Spectre binary with a patch. This
+is still a <code>TODO</code> item in the source code. To do that, use <code>git-apply</code> to
+apply the patch, save the previously compiled binary with another name and
+relaunch <code>make</code>:
 </p>
 
 <div class="org-src-container">
-<pre class="src src-diff"><span style="background-color: #383e3f;">diff --git i/spectre/perf.c w/spectre/perf.c</span>
-<span style="background-color: #383e3f;">index 3b89ee7..c648e28 100644</span>
-<span style="background-color: #383e3f;">--- </span><span style="color: #4EB8CA; background-color: #383e3f;">i/spectre/perf.c</span>
-<span style="background-color: #383e3f;">+++ </span><span style="color: #4EB8CA; background-color: #383e3f;">w/spectre/perf.c</span>
-<span style="background-color: #383e3f;">@@ -39,9 +39,9 @@</span><span style="color: #91b9c7; background-color: #383e3f;"> static int perf_fd_branch_miss;</span>
-<span style="color: #697375;"> static void perf_attr_init(struct perf_event_attr * attr, uint64_t config)</span>
-<span style="color: #697375;"> {</span>
-<span style="color: #697375;">     /* To use with real ARM hardware: */</span>
-<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    attr-&gt;type = PERF_TYPE_HARDWARE;</span>
-<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    </span><span style="color: #EEDCC1; background-color: #4FA8A3;">//</span><span style="color: #EEDCC1; background-color: #39855f;"> attr-&gt;type = PERF_TYPE_HARDWARE;</span>
-<span style="color: #697375;">     /* To use with gem5 full-system ARM: */</span>
-<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    </span><span style="color: #EEDCC1; background-color: #C74A4D;">//</span><span style="color: #EEDCC1; background-color: #a0586c;"> attr-&gt;type = PERF_TYPE_RAW;</span>
-<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    attr-&gt;type = PERF_TYPE_RAW;</span>
-<span style="color: #697375;">     attr-&gt;config = config;</span>
-<span style="color: #697375;">     attr-&gt;size = sizeof(*attr);</span>
-<span style="color: #697375;">     attr-&gt;exclude_kernel = 1;</span>
-<span style="background-color: #383e3f;">@@ -53,9 +53,9 @@</span><span style="color: #91b9c7; background-color: #383e3f;"> void perf_init() {</span>
-<span style="color: #697375;">     /* Initialize our perf_event_attr, representing one counter to be read. */</span>
-<span style="color: #697375;">     static struct perf_event_attr attr_cache_miss;</span>
-<span style="color: #697375;">     /* To use with real ARM hardware: */</span>
-<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    perf_attr_init(&amp;attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);</span>
-<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    </span><span style="color: #EEDCC1; background-color: #4FA8A3;">//</span><span style="color: #EEDCC1; background-color: #39855f;"> perf_attr_init(&amp;attr_cache_miss, PERF_COUNT_HW_CACHE_MISSES);</span>
-<span style="color: #697375;">     /* To use with gem5 full-system ARM: */</span>
-<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    </span><span style="color: #EEDCC1; background-color: #C74A4D;">//</span><span style="color: #EEDCC1; background-color: #a0586c;"> perf_attr_init(&amp;attr_cache_miss, 0x33);</span>
-<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    perf_attr_init(&amp;attr_cache_miss, 0x33);</span>
-<span style="color: #697375;">     /* Open the file descriptor corresponding to this counter. The counter</span>
-<span style="color: #697375;">        should start at this moment. */</span>
-<span style="color: #697375;">     if ((perf_fd_cache_miss = syscall(__NR_perf_event_open, &amp;attr_cache_miss, 0, -1, -1, 0)) == -1)</span>
-<span style="background-color: #383e3f;">@@ -64,8 +64,8 @@</span><span style="color: #91b9c7; background-color: #383e3f;"> void perf_init() {</span>
-<span style="color: #697375;">     /* Same here. */</span>
-<span style="color: #697375;">     static struct perf_event_attr attr_branch_miss;</span>
-<span style="color: #697375;">     /* To use with real ARM hardware: */</span>
-<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    perf_attr_init(&amp;attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);</span>
-<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    </span><span style="color: #EEDCC1; background-color: #4FA8A3;">//</span><span style="color: #EEDCC1; background-color: #39855f;"> perf_attr_init(&amp;attr_branch_miss,PERF_COUNT_HW_BRANCH_MISSES);</span>
-<span style="color: #697375;">     /* To use with gem5 full-system ARM: */</span>
-<span style="color: #EEDCC1; background-color: #a0586c;">-</span><span style="color: #EEDCC1; background-color: #a0586c;">    </span><span style="color: #EEDCC1; background-color: #C74A4D;">//</span><span style="color: #EEDCC1; background-color: #a0586c;"> perf_attr_init(&amp;attr_branch_miss, 0x10);</span>
-<span style="color: #EEDCC1; background-color: #39855f;">+</span><span style="color: #EEDCC1; background-color: #39855f;">    perf_attr_init(&amp;attr_branch_miss, 0x10);</span>
-<span style="color: #697375;">     if ((perf_fd_branch_miss = syscall(__NR_perf_event_open, &amp;attr_branch_miss, 0, -1, -1, 0)) == -1)</span>
-<span style="color: #697375;">         fprintf(stderr, "perf_event_open fail %d %d: %s\n", perf_fd_branch_miss, errno, strerror(errno));</span>
- }
+<pre class="src src-bash"><span style="color: #697375;"># </span><span style="color: #697375;">Apply the patch</span>
+<span style="color: #91b9c7;">cd</span> <span style="color: #fbaed2;">"$reproduce_repo"</span>
+git apply spectre/perf.c.patch
+<span style="color: #697375;"># </span><span style="color: #697375;">Save the previous binary</span>
+<span style="color: #91b9c7;">cd</span> spectre
+mv spectre spectre_native
+<span style="color: #697375;"># </span><span style="color: #697375;">Compile the new Spectre</span>
+make
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-orgb21e596" class="outline-3">
-<h3 id="orgb21e596"><span class="section-number-3">3.3</span> How to Setup gem5 for a Full-System Simulation</h3>
-<div class="outline-text-3" id="text-3-3">
+<div id="outline-container-howto_gem5_setup" class="outline-3">
+<h3 id="howto_gem5_setup"><span class="section-number-3">3.3</span> How to Setup gem5 for a Full-System Simulation</h3>
+<div class="outline-text-3" id="text-howto_gem5_setup">
 <p>
 To reproduce this work, you will need:
 </p>
@@ -514,14 +486,11 @@ Linux kernel v4.18.0</a> images provided by gem5's developers.</li>
 </ul>
 
 <p>
-Here, you can either:
+Note that this gem5 version and the images are now obsolete. You can of
+course follow our steps, but then for a new research, it would be better to
+use the latest gem5 version and images with the new recommended methods
+(e.g., Docker container).
 </p>
-<ul class="org-ul">
-<li>Follow the steps on the gem5 website to get the latest version of it and
-use the new recommended methods (e.g., Docker container). You may have to
-adapt our work to this new version, and the results may not be the same.</li>
-<li>Reproduce exactly what we did, with a bit of tinkering.</li>
-</ul>
 
 <p>
 First, install the recommended packages:
@@ -540,7 +509,10 @@ Clone the gem5 repository:
 
 <div class="org-src-container">
 <pre class="src src-bash">git clone https://gem5.googlesource.com/public/gem5
-<span style="color: #91b9c7;">cd</span> gem5
+<span style="color: #697375;"># </span><span style="color: #697375;">We will use this variable to designate the gem5 repository through the hole</span>
+<span style="color: #697375;"># </span><span style="color: #697375;">file.</span>
+<span style="color: #47ba99;">gem5_repo</span>=<span style="color: #fbaed2;">"$(pwd)/gem5"</span>
+<span style="color: #91b9c7;">cd</span> <span style="color: #fbaed2;">"$gem5_repo"</span>
 </pre>
 </div>
 
@@ -550,6 +522,18 @@ Checkout the commit for version 20.0:
 
 <div class="org-src-container">
 <pre class="src src-bash">git checkout v20.0.0.0
+</pre>
+</div>
+
+<p>
+<b>Optional</b>. If you want to obtain the <code>perf_event</code> metrics under a gem5
+simulation, you will have to apply a patch from our repository to the gem5
+source code to enable <code>perf_event</code> on the gem5 side (note that it should not
+be required on the latest gem5 version). To do that, use:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash">git apply <span style="color: #fbaed2;">"$reproduce_repo/gem5/perf_event.patch"</span>
 </pre>
 </div>
 
@@ -654,6 +638,7 @@ update the image with new files (binaries, data&#x2026;):
 <span style="color: #91b9c7;">workload_update</span><span style="color: #4EB8CA;">()</span> <span style="color: #4EB8CA;">{</span>
     <span style="color: #47ba99;">dev</span>=$<span style="color: #91b9c7;">(</span>sudo losetup -f<span style="color: #91b9c7;">)</span>
     <span style="color: #47ba99;">mnt</span>=/mnt/workload
+    <span style="color: #697375;"># </span><span style="color: #697375;">Get arguments.</span>
     <span style="color: #47ba99;">img</span>=<span style="color: #fbaed2;">"$1"</span>
     <span style="color: #91b9c7;">shift</span>
     <span style="color: #697375;"># </span><span style="color: #697375;">Create the mount folder and the loop device.</span>
@@ -684,6 +669,37 @@ communicate with a gem5 simulation.
 <div id="outline-container-howto_gem5" class="outline-3">
 <h3 id="howto_gem5"><span class="section-number-3">3.4</span> How to Simulate Spectre with gem5</h3>
 <div class="outline-text-3" id="text-howto_gem5">
+<p>
+We assume that you are able to compile and know how to perform a Spectre
+attack with our binary (at least in theory), described in Section
+<a href="#howto_spectre">3.2</a>.
+</p>
+
+<p>
+We assume that your gem5 setup is ready to perform a full-system simulation,
+described in Section <a href="#howto_gem5_setup">3.3</a>.
+</p>
+
+<p>
+The first step is to copy the Spectre binary on the <code>workload.img</code>
+image. Use our predefined function for that:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> <span style="color: #fbaed2;">"$reproduce_repo"</span>
+workload_update <span style="color: #fbaed2;">"$gem5_repo/$img_dir/$img"</span> spectre/spectre
+</pre>
+</div>
+
+<p>
+Then, we will launch the simulation of our system, described in Section
+<a href="#implem_gem5">4.2</a>, with gem5:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-bash"><span style="color: #91b9c7;">cd</span> gem5
+</pre>
+</div>
 </div>
 </div>
 
@@ -694,22 +710,22 @@ communicate with a gem5 simulation.
 </div>
 </div>
 
-<div id="outline-container-orgcce97f4" class="outline-2">
-<h2 id="orgcce97f4"><span class="section-number-2">4</span> Implementations</h2>
+<div id="outline-container-org1041c95" class="outline-2">
+<h2 id="org1041c95"><span class="section-number-2">4</span> Implementations</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 Implementation details goes here.
 </p>
 </div>
 
-<div id="outline-container-org4a53277" class="outline-3">
-<h3 id="org4a53277"><span class="section-number-3">4.1</span> Spectre</h3>
-<div class="outline-text-3" id="text-4-1">
+<div id="outline-container-implem_spectre" class="outline-3">
+<h3 id="implem_spectre"><span class="section-number-3">4.1</span> Spectre</h3>
+<div class="outline-text-3" id="text-implem_spectre">
 <p>
 Our implementation resides in the <code>spectre</code> directory of the repository:
 </p>
 
-<pre class="example" id="org033038c">
+<pre class="example" id="org73a7443">
 spectre
 ├── asm.c
 ├── asm.h
@@ -748,13 +764,19 @@ instructions.</li>
 </div>
 </div>
 
-<div id="outline-container-org25efdcb" class="outline-3">
-<h3 id="org25efdcb"><span class="section-number-3">4.2</span> gem5</h3>
+<div id="outline-container-implem_gem5" class="outline-3">
+<h3 id="implem_gem5"><span class="section-number-3">4.2</span> gem5</h3>
+<div class="outline-text-3" id="text-implem_gem5">
+<p>
+To understand what the patch does and how it works, see our corresponding
+<a href="https://stackoverflow.com/questions/63988672/using-perf-event-with-the-arm-pmu-inside-gem5">StackOverflow post</a> or our <a href="https://www.mail-archive.com/gem5-users@gem5.org/msg18401.html">ticket on the gem5 mailing list</a>.
+</p>
+</div>
 </div>
 </div>
 
-<div id="outline-container-orgb1d4d94" class="outline-2">
-<h2 id="orgb1d4d94"><span class="section-number-2">5</span> Appendices</h2>
+<div id="outline-container-org166628e" class="outline-2">
+<h2 id="org166628e"><span class="section-number-2">5</span> Appendices</h2>
 <div class="outline-text-2" id="text-5">
 <ul class="org-ul">
 <li>If you are a gem5 user who experience some unresolved errors, you could
@@ -765,7 +787,7 @@ check the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-04-01 jeu. 16:51</p>
+<p class="date">Created: 2021-04-07 mer. 10:38</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
