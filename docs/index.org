@@ -519,6 +519,9 @@
    :CUSTOM_ID: implem_gem5
    :END:
 
+   # TODO The first boot is with a simple cpu, a restoration is with the full
+   # CPU.
+   
    To understand what the patch does and how it works, see our corresponding
    [[https://stackoverflow.com/questions/63988672/using-perf-event-with-the-arm-pmu-inside-gem5][StackOverflow post]] or our [[https://www.mail-archive.com/gem5-users@gem5.org/msg18401.html][ticket on the gem5 mailing list]].
 
