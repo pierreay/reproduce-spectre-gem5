@@ -93,7 +93,7 @@
    #+BEGIN_SRC bash :eval never
    git clone https://github.com/pierreay/reproduce-spectre-gem5
    # We will use this variable to designate the repository through the hole file.
-   reproducing_repo="$(pwd)/reproduce-spectre-gem5"
+   reproducing_repo="$(pwd)"/reproduce-spectre-gem5
    cd "$reproducing_repo"
    #+END_SRC
 
@@ -249,7 +249,7 @@
    git clone https://gem5.googlesource.com/public/gem5
    # We will use this variable to designate the gem5 repository through the hole
    # file.
-   gem5_repo="$(pwd)/gem5"
+   gem5_repo="$(pwd)"/gem5
    cd "$gem5_repo"
    #+END_SRC
 
@@ -265,7 +265,7 @@
    be required on the latest gem5 version). To do that, use:
 
    #+BEGIN_SRC bash
-   git apply "$reproduce_repo/gem5/perf_event.patch"
+   git apply "$reproduce_repo"/gem5/perf_event.patch
    #+END_SRC
 
    #+BEGIN_SRC diff :tangle ../gem5/perf_event.patch :exports none
