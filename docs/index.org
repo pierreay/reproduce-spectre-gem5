@@ -956,11 +956,49 @@
    :CUSTOM_ID: implem_gem5
    :END:
 
-   # TODO The first boot is with a simple cpu, a restoration is with the full
-   # CPU.
+   Our gem5 system lives in the =gem5= directory of the repository:
+
+   #+BEGIN_SRC bash :dir ../ :results output :exports results
+   tree gem5
+   #+END_SRC
+
+   #+RESULTS:
+   : gem5
+   : ├── ARMv8A_Cortex_A72.py
+   : ├── perf_event.patch
+   : └── RPIv4.py
+   : 
+   : 0 directories, 3 files
+
+   It is composed of the following modules:
+   - =ARMv8A_Cortex_A72= :: Cluster and cores classes based on the ARM Cortex
+     A72 processor. This file defines the classes of a lot of important
+     components, like the branch predictor, the walker cache, the L1/L2 caches,
+     the cores and the processor itself, the pipeline configuration, and the
+     connections between all these components. Note that modeling a processor
+     is a very complex and long task, thus this model is surely not suitable to
+     use for a high-fidelity performance evaluation, rather it is suitable to
+     be used for security research.
+   - =RPIv4= :: System class based on a Raspberry Pi 4 Model B. This file
+     defines the classes of the main memory, the system itself (RealView
+     platform), tied-up every component and implements the functions that
+     interface gem5 and the host operating system (disks, arguments, PMU). In
+     this file, a lot of instantiation of objects that lack documentation in
+     gem5 are explained in the comments, feel free to refer to it if you want
+     to know how a full-system simulation works and how to implement it in a
+     "convenient way".
+
+   The "convenient way" we talked about in the last paragraph corresponds to:
+   - The boot process: The first boot is done with a simple and fast processor
+     model (an =AtomicSimpleCPU=), which allows to boot the system in less that
+     one hour. When a restoration is done, it is automatically detected and
+     replace the simple and fast processor model by a detailed and slow one (a
+     derived =O3CPU=).
+   - The workload share: TODO.
+   - The simulation mode: TODO Support both SE and FS.
    
-   To understand what the patch does and how it works, see our corresponding
-   [[https://stackoverflow.com/questions/63988672/using-perf-event-with-the-arm-pmu-inside-gem5][StackOverflow post]] or our [[https://www.mail-archive.com/gem5-users@gem5.org/msg18401.html][ticket on the gem5 mailing list]].
+   TODO: To understand what the patch does and how it works, see our
+   corresponding [[https://stackoverflow.com/questions/63988672/using-perf-event-with-the-arm-pmu-inside-gem5][StackOverflow post]] or our [[https://www.mail-archive.com/gem5-users@gem5.org/msg18401.html][ticket on the gem5 mailing list]].
 
 * Appendices
 
