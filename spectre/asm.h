@@ -14,13 +14,6 @@
 #include <stdint.h>
 #include <time.h>
 
-/* * TODO: */
-
-/**
- * - Compare usage of DSB ISH (mfence) and DSB SY (mfence_sys).
- * - Compare ordering of DSB and ISB (mfence, ifence).
- */
-
 /* * Documentation: */
 
 /** DSB -- Data Synchronization Barrier for Reads/Writes
