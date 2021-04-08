@@ -897,7 +897,7 @@
    :CUSTOM_ID: implem_spectre
    :END:
    
-   Our implementation resides in the =spectre= directory of the repository:
+   Our implementation lives in the =spectre= directory of the repository:
 
    #+BEGIN_SRC bash :dir ../ :results output :exports results
    tree spectre
@@ -921,17 +921,31 @@
    #+end_example
 
    It is composed of the following modules:
-   - =asm= :: ARM assembly implementation.
-   - =main= :: Orchestrate all the modules.
-   - =perf= :: =perf_event= wrapper.
+   - =asm= :: ARM assembly implementation. Directly inside the files, we
+     described in details the use of the src_asm[:eval never :exports
+     code]{dsb}, src_asm[:eval never :exports code]{isb} and src_asm[:eval
+     never :exports code]{dc civac} instructions in order to implement the
+     src_c[:eval never :exports code]{mfence()}, src_c[:eval never :exports
+     code]{ifence()}, src_c[:eval never :exports code]{flush()}, src_c[:eval
+     never :exports code]{rdtsc()} functions as well as an anti-speculation, a
+     memory access function and Flush+Reload functions.
+   - =main= :: Orchestrate all the modules. Handles the arguments, the
+     meta-repetition of the attack, the memory allocations, and the metrics
+     reporting.
+   - =perf= :: =perf_event= wrapper. It builds convenient functions to
+     initialize =perf_event= and read the counters on top of the Linux system
+     calls.
    - =spectre_pht_sa_ip= :: Spectre implementation (for the PHT-SA-IP
-     version).
-   - util :: Useful functions used across the binary.
+     version). Implements the covert-channel, the training and the attack
+     phase, as well as the simple heuristic to determine if the guess is
+     correct.
+   - util :: Utilities functions used across the binary. Implements the
+     argument handling, cache-hit threshold detector, gem5's related function,
+     hamming distance and others useful functions.
 
-   Note that:
-   - There is a lot of comments into the code, don't hesitate to look at it to
-     understands specific parts of the Spectre attack or the assembly
-     instructions.
+   Note that there is a lot of comments into the code to explain everything,
+   don't hesitate to look at it to understand specific parts of the Spectre
+   attack, the assembly instructions, or the choices that have been made.
 
 ** gem5
    :PROPERTIES:
