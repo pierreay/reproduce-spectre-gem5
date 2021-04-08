@@ -648,6 +648,230 @@
    code]{"$konata_dir/konata"} command, click on =File= and search for the
    =pipeview.txt= file generated with gem5 in the simulation folder.
 
+   Then, you will see a lot of instructions. How to understand and find an
+   interesting part in the visualization? There is two main methods:
+   - Find regular pattern and match them with the loops in the C code,
+   - Find the addresses of the instructions in the found patterns and match
+     them with the instructions in the assembly code.
+   
+   *Demonstration*. Let's visualize the pipeline during the Spectre attack. We
+   generated a trace of a Spectre execution with the commands above, except
+   that we used the implementation by the [[https://github.com/IAIK/transientfail][IAIK team]]
+   (=pocs/spectre/PHT/sa_ip/poc_arm=). We provide the needed trace in the
+   =docs/data/konata= directory of the repository, we encourage you to follow
+   our step-by-step guide at the same time.
+
+   Open the =pipeview.txt= file from the =pipeview.txt.tar.bz2= archive with
+   Konata. The first thing to do after loading the trace file is to enable
+   =Hide flushed instruction= in the Konata menu, otherwise, you won't be able
+   to see any pattern but only a linear stream (which is the goal of
+   speculative execution) due to a lot of flushed instruction. Then, un-zoom to
+   identify patterns. Below the C code of the main loop of the binary:
+
+   #+CAPTION: Main loop of Spectre, which iterate over every byte in the secret string (C code).
+   #+NAME: spectre_main_loop
+   #+BEGIN_SRC c :eval never :exports code
+   while (1) {
+       // for every byte in the string
+       j = (j + 1) % sizeof(DATA_SECRET);
+
+       // mistrain with valid index
+       for(int y = 0; y < 10; y++) {
+           access_array(0);
+       }
+       // potential out-of-bounds access
+       access_array(j);
+
+       // only show inaccessible values (SECRET)
+       if(j >= sizeof(DATA) - 1) {
+           mfence(); // avoid speculation
+           // Recover data from covert channel
+           cache_decode_pretty(leaked, j);
+       }
+    }
+   #+END_SRC
+   
+   In the picture below, you can see one main loop iteration of the attack
+   which iterate over each byte to guess. The first bold blank line, top left,
+   is the end of the first iteration, while the second, bottom right, is the
+   end of the second iteration.
+
+   #+CAPTION: One main loop iteration.
+   [[file:img/konata/konata_main_loop.png]]
+      
+   If you zoom-in on the bold line at the bottom right of the screenshot
+   (discussed above), you can see this: it's the end of the src_c[:eval never
+   :exports code]{cache_decode_pretty()} C function -- the receiver part of the
+   covert-channel --, where there is a 100 times loop over a =volatile=
+   variable to add a delay. To deduce yourself this information, you can count
+   the number of iterations (when it's small enough) or look at the addresses
+   of the instructions (which we do not provide here) by zooming a bit more.
+
+   #+CAPTION: Loop over a variable to add a delay.
+   [[file:img/konata/konata_cache_decode_pretty.png]]
+
+   Now that you have identified the main patterns by knowing when an attack's
+   iteration begin and finish, you can try to look directly for an address, in
+   order to find a transient execution. Below is the code of the conditional
+   branch that Spectre attacks, you see on the assembly code that its address
+   is =0x00400e74= corresponding to the src_asm[:eval never :exports code]{b.pl
+   0x400e88} instruction.
+
+   #+CAPTION: Core of the Spectre attack, with a function which access an array and check for its index with a conditional branch (C and assembly code).
+   #+BEGIN_SRC c :eval never :exports code
+   char access_array(int x) {
+       // flushing the data which is used in the condition increases
+       // probability of speculation
+       size_t len = sizeof(DATA) - 1;
+       mfence();
+       flush(&len);
+       flush(&x);
+
+       // ensure data is flushed at this point
+       mfence();
+
+       // check that only accessible part (DATA) can be accessed
+       if((float)x / (float)len < 1) {
+           // countermeasure: add the fence here
+           // Encode in cache
+           cache_encode(data[x]);
+       }
+   }
+   #+END_SRC
+
+   #+BEGIN_SRC asm :eval never :exports code
+       ╭ 100: sym.access_array (int64_t arg1, int64_t arg_1ch, int64_t arg_28h);
+       │           ; arg int64_t arg_1ch @ sp+0x1c
+       │           ; arg int64_t arg_28h @ sp+0x28
+       │           ; arg int64_t arg1 @ x0
+       │           0x00400e2c      fd7bbda9       stp x29, x30, [sp, -0x30]!   ; sp=0xffffffffffffffd0
+       │           0x00400e30      fd030091       mov x29, sp                 ; x29=0xffffffffffffffd0
+       │           0x00400e34      e01f00b9       str w0, [sp + arg_1ch]      ; arg1
+       │           0x00400e38      a00080d2       movz x0, 0x5                ; x0=0x5
+       │           0x00400e3c      e01700f9       str x0, [sp + arg_28h]
+       │           0x00400e40      9f3b03d5       dsb ish
+       │           0x00400e44      e0a30091       add x0, sp, 0x28            ; x0=0xfffffffffffffff8
+       │           0x00400e48      c2feff97       bl sym.flush                ;[1] ; lr=0x400e4c -> 0x910073e0 ; pc=0x400950 -> 0xd50b7e20
+       │           0x00400e4c      e0730091       add x0, sp, 0x1c            ; x0=0xffffffffffffffec
+       │           0x00400e50      c0feff97       bl sym.flush                ;[1] ; lr=0x400e54 -> 0xd5033b9f ; pc=0x400950 -> 0xd50b7e20
+       │           0x00400e54      9f3b03d5       dsb ish
+       │           0x00400e58      e11f40b9       ldr w1, [sp, 0x1c]          ; [0x1c:4]=-1 ; 28 ; tmp=0xffffffffffffffec ; w1=0xffffffff
+       │           0x00400e5c      e01740f9       ldr x0, [sp, 0x28]          ; sym.thread_arena
+       │                                                                      ; [0x28:4]=-1 ; tmp=0xfffffffffffffff8 ; x0=0xffffffffffffffff
+       │           0x00400e60      2000221e       scvtf s0, w1
+       │           0x00400e64      0100239e       ucvtf s1, x0
+       │           0x00400e68      0018211e       fdiv s0, s0, s1             ; s0=0x1
+       │           0x00400e6c      01102e1e       fmov s1, 1
+       │           0x00400e70      1020211e       fcmpe s0, s1
+       │       ╭─< 0x00400e74      a5000054       b.pl 0x400e88               ; pc=0x400e88 -> 0xa8c37bfd ; likely
+       │       │   0x00400e78      200400d0       adrp x0, 0x486000           ; x0=0x486000
+       │       │   0x00400e7c      00cc47f9       ldr x0, [x0, 0xf98]         ; [0xf98:4]=-1 ; 3992 ; tmp=0x486f98 ; x0=0x489a08 obj.data_1
+       │       │   0x00400e80      00c86138       ldrb w0, [x0, w1, sxtw]     ; w0=0xff
+       │       │   0x00400e84      56ffff97       bl sym.cache_encode         ;[2] ; lr=0x400e88 -> 0xa8c37bfd ; pc=0x400bdc -> 0x90000441 ; sym.cache_encode(0xff, 0xffffffff)
+       │       │   ; CODE XREF from sym.access_array @ 0x400e74
+       │       ╰─> 0x00400e88      fd7bc3a8       ldp x29, x30, [sp], 0x30    ; x29=0xffffffffffffffff ; x30=0xffffffffffffffff
+       ╰           0x00400e8c      c0035fd6       ret                         ; pc=0xffffffffffffffff
+   #+END_SRC
+
+   This time, you want to re-enable =Hide flushed instruction= from the menu,
+   otherwise you will not see the transient execution. To find the address,
+   graphically return at the beginning of the trace and zoom-in until seeing
+   the instructions addresses at the left. Then, press =F1=, type "=f
+   0x00400e74=", press =Enter= once to search for the address =0x00400e74= from
+   the beginning, and press =F3= again until finding a transient execution. An
+   instruction has been executed transiently when it is shadowed. After hitting
+   =F3= many dozens of time, you must see this at line 12781:
+
+   #+CAPTION: Bound check followed by a transient execution with the malicious index.
+   [[file:img/konata/konata_check_bound_with_transient_exec.png]]
+
+   In Spectre's source code, we know that the function src_c[:eval never
+   :exports code]{memaccess()} is used inside the src_c[:eval never :exports
+   code]{cache_encode()} function, that means that it is used when the
+   malicious transient load happened. Below the source code of this function
+   and the corresponding assembly code:
+
+   #+CAPTION: Function that load a value pointed by =*p= (C and assembly code).
+   #+BEGIN_SRC c :eval never :exports code
+   void maccess(void *p) {
+       volatile uint32_t value;
+       asm volatile("LDR %0, [%1]\n\t" : "=r"(value) : "r"(p));
+       asm volatile("DSB ISH");
+       asm volatile("ISB");
+   }
+   #+END_SRC
+
+   #+BEGIN_SRC asm :eval never :exports code
+       ╭ 28: sym.maccess (int64_t arg1);
+       │ ; var int64_t var_4h @ sp+0xc
+       │ ; arg int64_t arg1 @ x0
+       │ 0x00400960      ff4300d1       sub sp, sp, 0x10     
+       │ 0x00400964      000040f9       ldr x0, [x0]         
+       │ 0x00400968      e00f00b9       str w0, [sp + var_4h]
+       │ 0x0040096c      9f3b03d5       dsb ish              
+       │ 0x00400970      df3f03d5       isb                  
+       │ 0x00400974      ff430091       add sp, sp, 0x10     
+       ╰ 0x00400978      c0035fd6       ret                  
+   #+END_SRC
+
+   If you zoom-in a bit, you will be able to see every execution stage for each
+   instruction at a certain time. The first =ret= at address =0x40095c= is the
+   return of the src_c[:eval never :exports code]{flush()} C function into the
+   src_c[:eval never :exports code]{access_array()} function. You can see how
+   long was the instruction at the searched address (with the src_asm[:eval
+   never :exports code]{b.pl 0x400e88} mnemonic) to be executed due to the
+   condition which was long to resolve, more than the others. This is
+   graphically represented by an instruction which takes more space on the
+   horizontal axis. The speculative execution happened just after it. The
+   transient read you are interested in is the src_asm[:eval never :exports
+   code]{ldr x0, [x0]} at address =Ox400964= (in the src_c[:eval never :exports
+   code]{maccess()} function), which is completed but never committed, and leak
+   the secret value in the micro-architectural domain. You can see that this
+   was the last transiently executed instruction in this block, if the bound
+   check would have been 10 cycles shorter, then the attack would have failed!
+
+   #+CAPTION: Clear view on the transient execution of a read instruction with a malicious index.
+   [[file:img/konata/konata_check_bound_with_transient_exec_detailed.png]]
+
+   If you search over all the pipeline trace, you will not see another
+   transient execution of this load with a malicious index. That means that
+   despite all the iterations, the branch predictor defeated the Spectre attack
+   for the following iterations, which explains the bad results we had with
+   this implementation. You could search for when this happened by looking at
+   the assembly code of the main loop (C code already given [[spectre_main_loop][here]]):
+
+   #+CAPTION: Main loop of Spectre, which iterate over every byte in the secret string (Assembly code).
+   [[file:img/konata/spectre_asm_core_loop.png]]
+   
+   Search for the address =0x004006ac= of the src_asm[:eval never :exports
+   code]{bl sym.cache_decode_pretty} instruction, from the beginning, without
+   =Hide flushed ops= enabled. At some point, you will arrive here:
+
+   #+CAPTION: Branch predictor defeated Spectre.
+   [[file:img/konata/konata_check_bound_defeat.png]]
+   
+   You see the branch predictor defeating Spectre by predicting that the branch
+   in src_c[:eval never :exports code]{access_array()} will not be taken, and
+   thus, directly executing the code after the branch at address
+   =0x00400e88=. Since it is predicted not taken while it is in reality not
+   taken because it's the attack, the branch predictor was not tricked by
+   Spectre. Then the code enter the src_c[:eval never :exports
+   code]{cache_decode_pretty()} function at the searched address to read the
+   cached letters -- and the function will only find the bytes used in the
+   training phase, no leaked bytes.
+
+   Finally, we show here an iteration where the branch predictor is trained by
+   Spectre, by taken the branch with a valid index.
+
+   #+CAPTION: Branch predictor being trained.
+   [[file:img/konata/konata_check_bound_train.png]]
+
+   In summary, you were able to see the three scenarios:
+   1. When Spectre succeed and retrieve a byte,
+   2. When Spectre is defeated and failed -- which has been helpful during our
+      research,
+   3. When Spectre trains the branch predictor before the attack.
+
    Note that gem5 is able to output a large number of information from every
    element of the system. For instance, during our work, we used to trace
    instruction execution, which output the state of the processor along with
