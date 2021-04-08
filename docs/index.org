@@ -599,10 +599,11 @@
    :END:
 
    Konata is an external program allowing to see graphically the instructions
-   executed in the pipeline of a simulated processor. The first thing to do is
-   to download the pre-compiled binary from its [[https://github.com/shioyadan/Konata][official repository]]:
+   executed in the pipeline of a simulated processor. We suggest to the reader
+   to read [[http://learning.gem5.org/tutorial/presentations/vis-o3-gem5.pdf][this guide]] before using it. The first thing to do is to download the
+   pre-compiled binary from its [[https://github.com/shioyadan/Konata][official repository]]:
 
-   #+BEGIN_SRC bash
+   #+BEGIN_SRC bash :results silent
    mkdir konata && cd konata
    konata_dir=$(pwd)/konata-linux-x64
    wget -O - 'https://github.com/shioyadan/Konata/releases/download/v0.34/konata-linux-x64.tar.gz' | tar -xz
