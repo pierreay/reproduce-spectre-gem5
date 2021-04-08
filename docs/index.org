@@ -160,10 +160,9 @@
    #+END_SRC
 
    *Optional*. If you want to obtain the =perf_event= metrics under a gem5
-   simulation, you will have to recompile the Spectre binary with a patch. This
-   is still a =TODO= item in the source code. To do that, use =git-apply= to
-   apply the patch, save the previously compiled binary with another name and
-   relaunch =make=:
+   simulation, you will have to recompile the Spectre binary with a patch. To
+   do that, use =git-apply= to apply the patch, save the previously compiled
+   binary with another name and relaunch =make=:
 
     #+BEGIN_SRC bash :eval never
     # Apply the patch
@@ -911,13 +910,14 @@
    ├── main.c
    ├── Makefile
    ├── perf.c
+   ├── perf.c.patch
    ├── perf.h
    ├── spectre_pht_sa_ip.c
    ├── spectre_pht_sa_ip.h
    ├── util.c
    └── util.h
 
-   0 directories, 10 files
+   0 directories, 11 files
    #+end_example
 
    It is composed of the following modules:
@@ -939,13 +939,17 @@
      version). Implements the covert-channel, the training and the attack
      phase, as well as the simple heuristic to determine if the guess is
      correct.
-   - util :: Utilities functions used across the binary. Implements the
+   - =util= :: Utilities functions used across the binary. Implements the
      argument handling, cache-hit threshold detector, gem5's related function,
      hamming distance and others useful functions.
 
-   Note that there is a lot of comments into the code to explain everything,
-   don't hesitate to look at it to understand specific parts of the Spectre
-   attack, the assembly instructions, or the choices that have been made.
+   The utility of the patch is discussed in Section [[#howto_spectre]]. Its purpose
+   is only to comment/uncomment a few lines to switch from a working
+   =perf_event= on a native ARM system to a working =perf_event= on a gem5 ARM
+   system (this is still a TODO item in the code). Note that there is a lot of
+   comments into the code to explain everything, don't hesitate to look at it
+   to understand specific parts of the Spectre attack, the assembly
+   instructions, or the choices that have been made.
 
 ** gem5
    :PROPERTIES:
