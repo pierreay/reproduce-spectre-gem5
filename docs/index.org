@@ -21,6 +21,9 @@
   This web page is part of a [[https://github.com/pierreay/reproduce-spectre-gem5][GitHub repository]].
 
 * HowTo
+  :PROPERTIES:
+  :header-args:bash+: :session *se_howto*
+  :END:
 
   In this section, we will guide through step-by-step in the usage of our
   implementations. You can jump from one HowTo to another to see what it is
@@ -37,19 +40,24 @@
      Cortex-A72]] (ARMv8-A) processor implemented in a SoC [[https://www.raspberrypi.org/documentation/hardware/raspberrypi/bcm2711/rpi_DATA_2711_1p0.pdf][Broadcom BCM2711]].
    - A 64-bit operating system (kernel and userland) for ARM. We used [[https://www.offensive-security.com/kali-linux-arm-images/][Kali
      Linux]] (stable v2020.2a, with a Linux kernel v4.19.118-Re4son-v8l+ and a
-     GCC compiler v9.3), because:
+     GCC compiler v9.3) because:
      1. It is a full 64-bit operating system supporting ARM,
      2. The kernel is nearly the same as the one provided by gem5,
      3. The kernel sources and headers are available with =apt= (for developing
         kernel modules, if you do so).
 
-   Install the Kali Linux distribution. First, download the image:
+   Install the Kali Linux distribution. At the time of the study, the image was
+   hosted on the official website and available through direct
+   download. Unfortunately, you'll now have to either download the last version
+   on the official website, download the same version as we used through a
+   [[http://itorrents.org/torrent/6E3AB22CDCD43A8DFD89B4AFA9272E6ED4BC6911.torrent?title=kali-linux-2020-2a-rpi3-nexmon-64-img-xz][torrent]] (unofficiel) or compile it yourself. Here, we assume that you
+   download the image through the torrent and place the =.xz= file in the
+   =/tmp= directory:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    cd /tmp
-   zip="kali.xz"
-   img="kali.img"
-   wget -O "$zip" https://images.offensive-security.com/arm-images/kali-linux-2020.2a-rpi3-nexmon-64.img.xz
+   zip="kali-linux-2020.2a-rpi3-nexmon-64.img.xz"
+   img="kali-linux-2020.2a-rpi3-nexmon-64.img"
    xzcat "$zip" > "$img"
    rm -f "$zip"
    #+END_SRC
@@ -58,20 +66,19 @@
    name is correct (find it with =lsblk= and =umount= it if it has been
    automatically mounted). Bit-copy the image on the SD card:
 
-   #+BEGIN_SRC bash :eval never
-   sdcard=/dev/sdd
+   #+BEGIN_SRC bash :results silent
+   sdcard=/dev/sdX # Replace the X with your block device letter.
    sudo dd bs=4M if="$img" of="$sdcard" status=progress conv=fsync
-   rm -f "$img"
    #+END_SRC
 
    Now, plug the SD card in the Raspberry Pi, plug an Ethernet cable and plug
    the power cable in it. Then, find the IP address associated to it and
    connect with the =kali= login and =kali= password:
 
-   #+BEGIN_SRC bash
-   ip="192.168.1.1" # Find the correct IP.
+   #+BEGIN_SRC bash :results silent
+   ip="192.168.1.1" # Find the correct IP with nmap or your router interface.
    ssh kali@$ip
-   # We install the following software:
+   # We used the following software:
    sudo apt-get update && sudo apt-get upgrade
    sudo apt-get -y install linux-cpupower git
    #+END_SRC
@@ -79,7 +86,7 @@
    You can log in the =root= account by issuing the command =sudo su root= if
    needed.
 
-   You are now ready to reproduce Spectre on the Raspberry Pi.
+   You are now ready to compile and reproduce Spectre on the Raspberry Pi.
    
 ** How to Perform the Spectre Attack
    :PROPERTIES:
@@ -91,23 +98,23 @@
 
    First, clone the repository:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    git clone https://github.com/pierreay/reproduce-spectre-gem5
    # We will use this variable to designate the repository through the hole file.
-   reproducing_repo="$(pwd)"/reproduce-spectre-gem5
-   cd "$reproducing_repo"
+   reproduce_repo="$(pwd)"/reproduce-spectre-gem5
+   cd "$reproduce_repo"
    #+END_SRC
 
    Simply use the =Makefile= to compile our implementation, described in
    Section [[#implem_spectre]]:
     
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    cd spectre && make
    #+END_SRC
 
    Test if the binary is working by displaying a useful help message:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    ./spectre --help
    #+END_SRC
 
@@ -136,7 +143,7 @@
     
    And test the attack with the default parameters like this:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    ./spectre 
    #+END_SRC
 
@@ -146,7 +153,7 @@
    loop to repeat the hole experiment. We first launch one experiment, and
    relaunch the others with the =-q= flag to suppress header line:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    # Parameters.
    runs=50 # Number of runs - 1.
    m=10    # Number of meta repetition in the binary itself.
@@ -165,7 +172,7 @@
    do that, use =git-apply= to apply the patch, save the previously compiled
    binary with another name and relaunch =make=:
 
-    #+BEGIN_SRC bash :eval never
+    #+BEGIN_SRC bash :results silent
     # Apply the patch
     cd "$reproduce_repo"
     git apply spectre/perf.c.patch
@@ -237,7 +244,7 @@
 
    First, install the recommended packages:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    sudo apt install build-essential git m4 scons zlib1g zlib1g-dev \
        libprotobuf-dev protobuf-compiler libprotoc-dev libgoogle-perftools-dev \
        python3-dev python3-six python libboost-all-dev pkg-config
@@ -245,7 +252,7 @@
 
    Clone the gem5 repository:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    git clone https://gem5.googlesource.com/public/gem5
    # We will use this variable to designate the gem5 repository through the hole
    # file.
@@ -255,7 +262,7 @@
 
    Checkout the commit for version 20.0:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    git checkout v20.0.0.0
    #+END_SRC
 
@@ -264,7 +271,7 @@
    source code to enable =perf_event= on the gem5 side (note that it should not
    be required on the latest gem5 version). To do that, use:
 
-   #+BEGIN_SRC bash
+   #+BEGIN_SRC bash :results silent
    git apply "$reproduce_repo"/gem5/perf_event.patch
    #+END_SRC
 
@@ -341,7 +348,7 @@
    And finally, compile it in optimized mode (=opt=), for the ARM architecture
    (=ARM=), with 8 cores and for Python 3. It can take several hours:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    mode="opt"
    arch="ARM"
    cores=8
@@ -352,7 +359,7 @@
     If everything is working, you should be able to display the help of our
     simulation script:
 
-    #+BEGIN_SRC bash :eval never
+    #+BEGIN_SRC bash :results silent
     build/ARM/gem5.opt -q "$reproduce_repo"/gem5/RPIv4.py --help   
     #+END_SRC
 
@@ -403,12 +410,22 @@
     
     Otherwise, check the [[https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#compilation][=docs/gem5_errors.html=]] file to see if the compilation
     error has already been encountered.
+
+    You will also need to compile =m5term=, a tool using =sockets= to connect
+    to the gem5 system (=telnet= could also be used instead, but this one is
+    more appreciate):
+
+    #+BEGIN_SRC bash :results silent
+    cd util/term
+    make
+    #+END_SRC
     
     Let's create the images you need to perform a full-system
     simulation. First, you have to download the operating system and the kernel
     images that you will use over our simulated hardware:
 
-    #+BEGIN_SRC bash :eval never
+    #+BEGIN_SRC bash :results silent
+    cd "$gem5_repo"
     img_dir=img
     mkdir $img_dir && cd $img_dir
     # OS
@@ -422,14 +439,14 @@
     do that, first create a 100MB zero file (you can change the size with the
     =count= parameter):
 
-    #+BEGIN_SRC bash :eval never
+    #+BEGIN_SRC bash :results silent
     img=workload.img
     dd if=/dev/zero of=$img count=200K
     #+END_SRC
 
     Create a loopback device in order to access the image as a block device:
 
-    #+BEGIN_SRC bash :eval never
+    #+BEGIN_SRC bash :results silent
     dev=$(sudo losetup -f)
     sudo losetup -fP $img
     #+END_SRC
@@ -437,7 +454,7 @@
     Create a DOS partition table and a primary partition on the entire image,
     then format the new created partition with the =ext4= file system:
 
-    #+BEGIN_SRC bash :eval never
+    #+BEGIN_SRC bash :results silent
     echo "," | sudo sfdisk $dev
     sudo mke2fs "$dev"p1
     #+END_SRC
@@ -445,7 +462,7 @@
     Finally, you are done at modifying your image, detach it from the loopback
     device:
 
-    #+BEGIN_SRC bash :eval never
+    #+BEGIN_SRC bash :results silent
     sudo losetup -d $dev
     #+END_SRC
 
@@ -453,27 +470,27 @@
     simulation. Define a function that will be used each time you need to
     update the image with new files (binaries, data...):
 
-    #+BEGIN_SRC bash :eval never
+    #+BEGIN_SRC bash :results silent
     # $1: workload image name/path.
     # $*: list of files to copy.
     workload_update() {
-        dev=$(sudo losetup -f)
-        mnt=/mnt/workload
+        local_dev=$(sudo losetup -f)
+        local_mnt=/mnt/workload
         # Get arguments.
-        img="$1"
+        local_img="$1"
         shift
         # Create the mount folder and the loop device.
-        sudo mkdir -p $mnt
-        sudo losetup -fP "$img"
+        sudo mkdir -p $local_mnt
+        sudo losetup -fP "$local_img"
         # Mount the block device.
-        sudo mount -o loop $dev $mnt
+        sudo mount -o loop "$local_dev"p1 $local_mnt
         # Copy files/folders.
-        sudo cp -r -f -t $mnt $*
+        sudo cp -r -f -t $local_mnt $*
         # List the files to confirm.
-        ls -alh $mnt
+        ls -alh $local_mnt
         # Unmount the image and freed the loop device.
-        sudo umount $mnt
-        sudo losetup -d $dev
+        sudo umount $local_mnt
+        sudo losetup -d $local_dev
     }
     #+END_SRC
 
@@ -500,19 +517,19 @@
    our system, declare 4 cores and the images for the full-system simulation
    with this command:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    cd "$reproduce_repo"/gem5
    "$gem5_repo"/build/ARM/gem5.opt -q -d 01boot \
                                    ./RPIv4.py -v --num-cores=4 --fs \
-                                   --fs-kernel="$gem5_repo"/"$img_dir"/vmlinux.arm64 \
+                                   --fs-kernel="$gem5_repo"/"$img_dir"/binaries/vmlinux.arm64 \
                                    --fs-disk-image="$gem5_repo"/"$img_dir"/linaro-minimal-aarch64.img \
                                    --fs-workload-image="$gem5_repo"/"$img_dir"/"$img"
    #+END_SRC
 
    On another shell, launch the following command to connect to your simulation
-   with =m5term= (which use =telnet=):
+   with =m5term=:
    
-   #+BEGIN_SRC bash :evel never
+   #+BEGIN_SRC bash :results silent :session *se_m5term*
    "$gem5_repo"/util/term/m5term localhost 3456
    #+END_SRC
 
@@ -520,7 +537,7 @@
    process to finish until you get a prompt, and then, issue the following
    command:
 
-   #+BEGIN_SRC bash
+   #+BEGIN_SRC bash :results silent :session *se_m5term*
    m5 checkpoint
    #+END_SRC
 
@@ -533,7 +550,7 @@
    You can terminate your simulation. Press =C-d= to disconnect from the
    terminal, and use the following command to kill gem5:
 
-   #+BEGIN_SRC bash
+   #+BEGIN_SRC bash :results silent
    pkill gem5
    #+END_SRC
 
@@ -541,7 +558,7 @@
    full-system simulation. First, copy the Spectre binary on the =workload.img=
    image. Use our predefined function (Section [[#howto_gem5_setup]]) for that:
 
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    cd "$reproduce_repo"
    workload_update "$gem5_repo"/"$img_dir"/"$img" spectre/spectre
    #+END_SRC
@@ -550,10 +567,10 @@
    inside. The last step is to relaunch the simulation from the previous
    checkpoint:
 
-   #+BEGIN_SRC bash
+   #+BEGIN_SRC bash :results silent
    "$gem5_repo"/build/ARM/gem5.opt -q -d 02restore \
                                       ./RPIv4.py -v --num-cores=4 --fs \
-                                      --fs-kernel="$gem5_repo"/"$img_dir"/vmlinux.arm64 \
+                                      --fs-kernel="$gem5_repo"/"$img_dir"/binaries/vmlinux.arm64 \
                                       --fs-disk-image="$gem5_repo"/"$img_dir"/linaro-minimal-aarch64.img \
                                       --fs-workload-image="$gem5_repo"/"$img_dir"/"$img" \
                                       --fs-restore=01boot/cpt.*
@@ -562,14 +579,14 @@
    On another shell, you can connect to the restored simulation and wait
    reaching the prompt (a matter of seconds or 1-2 minutes):
 
-   #+BEGIN_SRC bash :evel never
+   #+BEGIN_SRC bash :results silent :session *se_m5term*
    "$gem5_repo"/util/term/m5term localhost 3456
    #+END_SRC
 
-   Inside the =telnet= session, you can issue these two commands to access to
+   Inside the =m5term= session, you can issue these two commands to access to
    the Spectre binary:
 
-   #+BEGIN_SRC bash
+   #+BEGIN_SRC bash :results silent :session *se_m5term*
    mkdir -p workload
    # /dev/vdb1 correspond to the image given with the --fs-workload option.
    mount /dev/vdb1 ./workload
@@ -577,7 +594,7 @@
 
    And finally launch the Spectre attack inside the simulated system:
 
-   #+BEGIN_SRC bash
+   #+BEGIN_SRC bash :results silent :session *se_m5term*
    cd workload
    ./spectre -m 10 -l 100 -t 999
    #+END_SRC
@@ -635,7 +652,7 @@
    --debug-file=pipeview.txt= flags passed to the gem5 binary and the
    =--debug-start=$ticknumber= set accordingly to the previous step:
    
-   #+BEGIN_SRC bash :eval never
+   #+BEGIN_SRC bash :results silent
    "$gem5_repo"/build/ARM/gem5.opt -q \
                --debug-flags=O3PipeView --debug-file=pipeview.txt --debug-start=$ticknumber \
                "$reproduce_repo"/gem5/RPIv4.py -v --se
@@ -661,12 +678,13 @@
    =docs/data/konata= directory of the repository, we encourage you to follow
    our step-by-step guide at the same time.
 
-   Open the =pipeview.txt= file from the =pipeview.txt.tar.bz2= archive with
-   Konata. The first thing to do after loading the trace file is to enable
-   =Hide flushed instruction= in the Konata menu, otherwise, you won't be able
-   to see any pattern but only a linear stream (which is the goal of
-   speculative execution) due to a lot of flushed instruction. Then, un-zoom to
-   identify patterns. Below the C code of the main loop of the binary:
+   Launch Konata with the =$konata_dir/konata= binary and open the
+   =pipeview.txt= file from the =pipeview.txt.tar.bz2= archive. The first thing
+   to do after loading the trace file is to enable =Hide flushed instruction=
+   in the Konata menu, otherwise, you won't be able to see any pattern but only
+   a linear stream (which is the goal of speculative execution) due to a lot of
+   flushed instruction. Then, un-zoom to identify patterns. Below the C code of
+   the main loop of the binary:
 
    #+CAPTION: Main loop of Spectre, which iterate over every byte in the secret string (C code).
    #+NAME: spectre_main_loop
