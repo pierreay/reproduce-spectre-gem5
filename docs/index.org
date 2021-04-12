@@ -989,16 +989,28 @@
      "convenient way".
 
    The "convenient way" we talked about in the last paragraph corresponds to:
-   - The boot process: The first boot is done with a simple and fast processor
+   - The boot process :: The first boot is done with a simple and fast processor
      model (an =AtomicSimpleCPU=), which allows to boot the system in less that
      one hour. When a restoration is done, it is automatically detected and
      replace the simple and fast processor model by a detailed and slow one (a
      derived =O3CPU=).
-   - The workload share: TODO.
-   - The simulation mode: TODO Support both SE and FS.
-   
-   TODO: To understand what the patch does and how it works, see our
-   corresponding [[https://stackoverflow.com/questions/63988672/using-perf-event-with-the-arm-pmu-inside-gem5][StackOverflow post]] or our [[https://www.mail-archive.com/gem5-users@gem5.org/msg18401.html][ticket on the gem5 mailing list]].
+   - The workload share :: Several methods exists to share files between the host
+     system and the gem5 system, as modifying the large operating system image
+     or piping through the terminal. Our choice was to create a new block
+     device on the gem5 system and to use a dedicated so-called "workload"
+     image, allowing to use an unmodified system image, to swap them, and to be
+     less error prone than terminal piping.
+   - The simulation mode :: Regarding the goal of an experiment, it can be useful
+     to use the system-call emulation (fast) or the full-system simulation
+     (realistic) with the same simulated hardware (system and processor
+     models). Thus, our system support the both modes with the same Python
+     file, unlike the majority of scripts provided with gem5.
+
+   The utility of the patch is discussed in Section [[#howto_gem5_setup]]. Briefly,
+   it generates the PMU declaration in the device tree to enable communication
+   between the Linux kernel and the gem5 PMU model. To deeply understand what
+   the patch does and how it works, see our corresponding [[https://stackoverflow.com/questions/63988672/using-perf-event-with-the-arm-pmu-inside-gem5][StackOverflow post]] or
+   our [[https://www.mail-archive.com/gem5-users@gem5.org/msg18401.html][ticket on the gem5 mailing list]].
 
 * Appendices
 
