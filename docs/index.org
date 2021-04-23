@@ -12,7 +12,8 @@
   Clémentine Maurice. The "[[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/master_thesis.pdf][Simulating Transient Execution Attacks with gem5]]"
   master thesis is also an interesting document concerning the background
   knowledge which is extensively described, while the results mentioned in this
-  document are obsolete.
+  document are obsolete. Finally, [[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/slides.html][here are the slides]] ([[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/slides.pdf][PDF version]]) of the
+  conference.
 
   This page will guide you through the reproduction of the experiments, the
   usage of our implementations and through the demonstration of some techniques
