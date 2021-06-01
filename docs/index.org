@@ -14,7 +14,7 @@
   knowledge which is extensively described, while the results mentioned in this
   document are obsolete. This work was presented at:
   1. EuroSec'21: [[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/conferences/eurosec21/slides.html][Slides]] ([[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/conferences/eurosec21/slides.pdf][PDF version]]) [[https://www.youtube.com/watch?v=uQZNqIOV7Sw&t=1129s][Video]]
-  1. ICHSA'21: [[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/conferences/ichsa21/slides.html][Slides]]
+  1. ICHSA'21: [[https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/conferences/ichsa21/slides.pdf][Slides]]
 
   This page will guide you through the reproduction of the experiments, the
   usage of our implementations and through the demonstration of some techniques
