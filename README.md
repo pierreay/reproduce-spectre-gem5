@@ -5,7 +5,7 @@
 This repository contains the web pages, code snippets, implementation details,
 experiments results, screenshots and all useful material from the "[Reproducing
 Spectre Attack with gem5, How To Do It
-Right?](https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/paper.pdf)"
+Right?](https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/conferences/eurosec21/paper.pdf)"
 paper, published at EuroSec'21 by Pierre Ayoub and Clémentine Maurice.
 
 If you arrived here for the first time, go check out the [official web
