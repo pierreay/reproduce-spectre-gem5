@@ -1,5 +1,7 @@
 #+TITLE: Reproducing Spectre Attack with gem5, How To Do It Right?
 #+SETUPFILE: https://raw.githubusercontent.com/pierreay/orgcss/master/orgcss.setup
+# Use an HTML-linked CSS, because crrently, the setupfile include a local link.
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="https://raw.githubusercontent.com/pierreay/orgcss/master/docs/org.css"/> 
 #+AUTHOR: Pierre Ayoub
 #+EMAIL: pierre.ayoub@eurecom.fr
 #+LANGUAGE: en
