@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2023-07-27 jeu. 15:01 -->
+<!-- 2023-07-27 jeu. 16:10 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
@@ -202,8 +202,8 @@
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org0efa348">1. Introduction</a></li>
-<li><a href="#orgd02b1bc">2. HowTo</a>
+<li><a href="#orge7022ff">1. Introduction</a></li>
+<li><a href="#org749fbee">2. HowTo</a>
 <ul>
 <li><a href="#setup_arm">2.1. How to Setup the Native ARM System</a></li>
 <li><a href="#howto_spectre">2.2. How to Perform the Spectre Attack</a></li>
@@ -212,19 +212,19 @@
 <li><a href="#howto_konata">2.5. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#org99c4f47">3. Implementations</a>
+<li><a href="#orgc83ed61">3. Implementations</a>
 <ul>
 <li><a href="#implem_spectre">3.1. Spectre</a></li>
 <li><a href="#implem_gem5">3.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#orgd6ad2de">4. Appendices</a></li>
+<li><a href="#orgf2c0f84">4. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org0efa348" class="outline-2">
-<h2 id="org0efa348"><span class="section-number-2">1.</span> Introduction</h2>
+<div id="outline-container-orge7022ff" class="outline-2">
+<h2 id="orge7022ff"><span class="section-number-2">1.</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome to the additional web page from the "<a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/conferences/eurosec21/paper.pdf">Reproducing Spectre Attack with
@@ -251,8 +251,8 @@ This web page is part of a <a href="https://github.com/pierreay/reproduce-spectr
 </div>
 </div>
 
-<div id="outline-container-orgd02b1bc" class="outline-2">
-<h2 id="orgd02b1bc"><span class="section-number-2">2.</span> HowTo</h2>
+<div id="outline-container-org749fbee" class="outline-2">
+<h2 id="org749fbee"><span class="section-number-2">2.</span> HowTo</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 In this section, we will guide through step-by-step in the usage of our
@@ -378,7 +378,7 @@ Test if the binary is working by displaying a useful help message:
 </pre>
 </div>
 
-<pre class="example" id="org76a1c2e">
+<pre class="example" id="org74e7710">
 Usage: spectre [OPTION...]
 Spectre -- A Spectre implementation useful for research
 
@@ -543,7 +543,7 @@ simulation script:
 </pre>
 </div>
 
-<pre class="example" id="org023cfa7">
+<pre class="example" id="org2f12afb">
 usage: RPIv4.py [-h] [-v] [--num-cores NUM_CORES] [--se] [--fs]
                 [--fs-kernel FS_KERNEL] [--fs-disk-image FS_DISK_IMAGE]
                 [--fs-workload-image FS_WORKLOAD_IMAGE]
@@ -894,7 +894,7 @@ part and stop the simulation when you see the output text.
 When stopping the simulation, you will see a message like this one:
 </p>
 
-<pre class="example" id="orga640bea">
+<pre class="example" id="org12333d9">
 Exiting @ tick 3266927000 because user interrupt received
 </pre>
 
@@ -983,7 +983,7 @@ end of the second iteration.
 </p>
 
 
-<div id="orge8e28d2" class="figure">
+<div id="org3c6c69f" class="figure">
 <p><img src="img/konata/konata_main_loop.png" alt="konata_main_loop.png" />
 </p>
 <p><span class="figure-number">Figure 1: </span>One main loop iteration.</p>
@@ -999,7 +999,7 @@ of the instructions (which we do not provide here) by zooming a bit more.
 </p>
 
 
-<div id="org5f589a8" class="figure">
+<div id="orgc187cc4" class="figure">
 <p><img src="img/konata/konata_cache_decode_pretty.png" alt="konata_cache_decode_pretty.png" />
 </p>
 <p><span class="figure-number">Figure 2: </span>Loop over a variable to add a delay.</p>
@@ -1082,7 +1082,7 @@ instruction has been executed transiently when it is shadowed. After hitting
 </p>
 
 
-<div id="orgb9c52d6" class="figure">
+<div id="org7b1a99e" class="figure">
 <p><img src="img/konata/konata_check_bound_with_transient_exec.png" alt="konata_check_bound_with_transient_exec.png" />
 </p>
 <p><span class="figure-number">Figure 3: </span>Bound check followed by a transient execution with the malicious index.</p>
@@ -1134,7 +1134,7 @@ check would have been 10 cycles shorter, then the attack would have failed!
 </p>
 
 
-<div id="orgc23b0f1" class="figure">
+<div id="orgad6863a" class="figure">
 <p><img src="img/konata/konata_check_bound_with_transient_exec_detailed.png" alt="konata_check_bound_with_transient_exec_detailed.png" />
 </p>
 <p><span class="figure-number">Figure 4: </span>Transient execution of a read instruction with a malicious index.</p>
@@ -1150,7 +1150,7 @@ the assembly code of the main loop (C code already given <a href="#spectre_main_
 </p>
 
 
-<div id="orge0280ec" class="figure">
+<div id="orgcb6068f" class="figure">
 <p><img src="img/konata/spectre_asm_core_loop.png" alt="spectre_asm_core_loop.png" />
 </p>
 <p><span class="figure-number">Figure 5: </span>Main loop of Spectre, which iterate over every byte in the secret string (Assembly code).</p>
@@ -1162,7 +1162,7 @@ Search for the address <code>0x004006ac</code> of the <code class="src src-asm">
 </p>
 
 
-<div id="org3493863" class="figure">
+<div id="orgd1adbb0" class="figure">
 <p><img src="img/konata/konata_check_bound_defeat.png" alt="konata_check_bound_defeat.png" />
 </p>
 <p><span class="figure-number">Figure 6: </span>Spectre defeated by the branch predictor.</p>
@@ -1185,7 +1185,7 @@ Spectre, by taken the branch with a valid index.
 </p>
 
 
-<div id="org1a16f8a" class="figure">
+<div id="org94226c2" class="figure">
 <p><img src="img/konata/konata_check_bound_train.png" alt="konata_check_bound_train.png" />
 </p>
 <p><span class="figure-number">Figure 7: </span>Branch predictor being trained.</p>
@@ -1222,8 +1222,8 @@ parameters, with this command:
 </div>
 </div>
 
-<div id="outline-container-org99c4f47" class="outline-2">
-<h2 id="org99c4f47"><span class="section-number-2">3.</span> Implementations</h2>
+<div id="outline-container-orgc83ed61" class="outline-2">
+<h2 id="orgc83ed61"><span class="section-number-2">3.</span> Implementations</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-implem_spectre" class="outline-3">
@@ -1233,7 +1233,7 @@ parameters, with this command:
 Our implementation lives in the <code>spectre</code> directory of the repository:
 </p>
 
-<pre class="example" id="org5d55cf8">
+<pre class="example" id="org97bf320">
 spectre
 ├── asm.c
 ├── asm.h
@@ -1357,19 +1357,19 @@ our <a href="https://www.mail-archive.com/gem5-users@gem5.org/msg18401.html">tic
 </div>
 </div>
 
-<div id="outline-container-orgd6ad2de" class="outline-2">
-<h2 id="orgd6ad2de"><span class="section-number-2">4.</span> Appendices</h2>
+<div id="outline-container-orgf2c0f84" class="outline-2">
+<h2 id="orgf2c0f84"><span class="section-number-2">4.</span> Appendices</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 If you are a gem5 user who experience some unresolved errors, you could check
-the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#runtime"><code>docs/gem5_errors.html</code></a> file of the repository.
+the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html"><code>docs/gem5_errors.html</code></a> file of the repository.
 </p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Pierre AYOUB Pierre Ayoub</p>
-<p class="date">Created: 2023-07-27 jeu. 15:01</p>
+<p class="date">Created: 2023-07-27 jeu. 16:10</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
