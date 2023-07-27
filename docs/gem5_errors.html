@@ -3,14 +3,14 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-04-01 jeu. 13:44 -->
+<!-- 2023-07-27 jeu. 16:01 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Troubleshooting gem5 Errors</title>
-<meta name="generator" content="Org mode" />
-<meta name="author" content="Pierre Ayoub" />
-<style type="text/css">
- <!--/*--><![CDATA[/*><!--*/
+<meta name="author" content="Pierre AYOUB Pierre Ayoub" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
   .title  { text-align: center;
              margin-bottom: .2em; }
   .subtitle { text-align: center;
@@ -31,8 +31,9 @@
   #postamble p, #preamble p { font-size: 90%; margin: .2em; }
   p.verse { margin-left: 3%; }
   pre {
-    border: 1px solid #ccc;
-    box-shadow: 3px 3px 3px #eee;
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
     padding: 8pt;
     font-family: monospace;
     overflow: auto;
@@ -41,21 +42,21 @@
   pre.src {
     position: relative;
     overflow: auto;
-    padding-top: 1.2em;
   }
   pre.src:before {
     display: none;
     position: absolute;
-    background-color: white;
-    top: -10px;
-    right: 10px;
+    top: -8px;
+    right: 12px;
     padding: 3px;
-    border: 1px solid black;
+    color: #555;
+    background-color: #f2f2f299;
   }
-  pre.src:hover:before { display: inline;}
+  pre.src:hover:before { display: inline; margin-top: 14px;}
   /* Languages per Org manual */
   pre.src-asymptote:before { content: 'Asymptote'; }
   pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
   pre.src-C:before { content: 'C'; }
   /* pre.src-C++ doesn't work in CSS */
   pre.src-clojure:before { content: 'Clojure'; }
@@ -190,81 +191,58 @@
     { font-size: 10px; font-weight: bold; white-space: nowrap; }
   .org-info-js_search-highlight
     { background-color: #ffff00; color: #000000; font-weight: bold; }
-  .org-svg { width: 90%; }
-  /*]]>*/-->
+  .org-svg { }
 </style>
-<link rel="stylesheet" href="https://sandyuraz.com/styles/org.min.css">
-<script type="text/javascript">
-// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
-<!--/*--><![CDATA[/*><!--*/
-     function CodeHighlightOn(elem, id)
-     {
-       var target = document.getElementById(id);
-       if(null != target) {
-         elem.classList.add("code-highlighted");
-         target.classList.add("code-highlighted");
-       }
-     }
-     function CodeHighlightOff(elem, id)
-     {
-       var target = document.getElementById(id);
-       if(null != target) {
-         elem.classList.remove("code-highlighted");
-         target.classList.remove("code-highlighted");
-       }
-     }
-    /*]]>*///-->
-// @license-end
-</script>
+<link rel="stylesheet" type="text/css" href="/home/pierre/work/info/org/orgcss/docs/org.css"/>
 </head>
 <body>
-<div id="content">
+<div id="content" class="content">
 <h1 class="title">Troubleshooting gem5 Errors</h1>
-<div id="table-of-contents">
+<div id="table-of-contents" role="doc-toc">
 <h2>Table of Contents</h2>
-<div id="text-table-of-contents">
+<div id="text-table-of-contents" role="doc-toc">
 <ul>
 <li><a href="#compilation">1. Compilation Errors</a>
 <ul>
-<li><a href="#orgf6d7a12">1.1. Treating Warnings as Errors</a></li>
-<li><a href="#org817b669">1.2. Python? No such file or directory!</a></li>
+<li><a href="#orgc7164e0">1.1. Treating Warnings as Errors</a></li>
+<li><a href="#org8547abb">1.2. Python? No such file or directory!</a></li>
 </ul>
 </li>
 <li><a href="#runtime">2. Runtime Errors</a>
 <ul>
-<li><a href="#org8f9555e">2.1. AttributeError: Can't resolve proxy 'any' of type 'XXX' from 'XXX'</a>
+<li><a href="#org1a3a6c2">2.1. AttributeError: Can't resolve proxy 'any' of type 'XXX' from 'XXX'</a>
 <ul>
-<li><a href="#org64d75e4">2.1.1. Goal</a></li>
-<li><a href="#orgea5eed0">2.1.2. Explanation</a></li>
-<li><a href="#org07914bc">2.1.3. Resolution</a></li>
+<li><a href="#org88bf207">2.1.1. Goal</a></li>
+<li><a href="#orgd00448e">2.1.2. Explanation</a></li>
+<li><a href="#org39031dd">2.1.3. Resolution</a></li>
 </ul>
 </li>
-<li><a href="#orgd7d9b73">2.2. gem5 has encountered a segmentation fault!</a>
+<li><a href="#org6d5c434">2.2. gem5 has encountered a segmentation fault!</a>
 <ul>
-<li><a href="#org2e5d380">2.2.1. Goal</a></li>
-<li><a href="#orgadcc938">2.2.2. Explanation</a></li>
-<li><a href="#orgb2d9f66">2.2.3. Resolution</a></li>
+<li><a href="#orgfc15c1e">2.2.1. Goal</a></li>
+<li><a href="#org3dab617">2.2.2. Explanation</a></li>
+<li><a href="#org9f71496">2.2.3. Resolution</a></li>
 </ul>
 </li>
-<li><a href="#org02f50c8">2.3. fatal: XXX</a>
+<li><a href="#orgb6297e3">2.3. fatal: XXX</a>
 <ul>
-<li><a href="#org574ab96">2.3.1. Goal</a></li>
-<li><a href="#org1654124">2.3.2. Explanation</a></li>
-<li><a href="#org2d11698">2.3.3. Resolution</a></li>
+<li><a href="#org8aa5553">2.3.1. Goal</a></li>
+<li><a href="#org2e4a701">2.3.2. Explanation</a></li>
+<li><a href="#org586d424">2.3.3. Resolution</a></li>
 </ul>
 </li>
-<li><a href="#orgbb0589f">2.4. panic: XXX port of XXX not connected to anything!</a>
+<li><a href="#org26082bf">2.4. panic: XXX port of XXX not connected to anything!</a>
 <ul>
-<li><a href="#org711dcc6">2.4.1. Goal</a></li>
-<li><a href="#org9ac90f9">2.4.2. Explanation</a></li>
-<li><a href="#orgd2148cc">2.4.3. Resolution</a></li>
+<li><a href="#org0de3669">2.4.1. Goal</a></li>
+<li><a href="#org086b285">2.4.2. Explanation</a></li>
+<li><a href="#org3d3bccd">2.4.3. Resolution</a></li>
 </ul>
 </li>
-<li><a href="#org0f78286">2.5. Kernel panic - not syncing: VFS: Unable to mount root fs</a>
+<li><a href="#org41117df">2.5. Kernel panic - not syncing: VFS: Unable to mount root fs</a>
 <ul>
-<li><a href="#orgff92567">2.5.1. Goal</a></li>
-<li><a href="#orgcae60e7">2.5.2. Explanation</a></li>
-<li><a href="#org9888d3d">2.5.3. Resolution</a></li>
+<li><a href="#orgb1f2453">2.5.1. Goal</a></li>
+<li><a href="#org91c87ee">2.5.2. Explanation</a></li>
+<li><a href="#orgbac8876">2.5.3. Resolution</a></li>
 </ul>
 </li>
 </ul>
@@ -274,31 +252,31 @@
 </div>
 
 <div id="outline-container-compilation" class="outline-2">
-<h2 id="compilation"><span class="section-number-2">1</span> Compilation Errors</h2>
+<h2 id="compilation"><span class="section-number-2">1.</span> Compilation Errors</h2>
 <div class="outline-text-2" id="text-compilation">
 </div>
 
-<div id="outline-container-orgf6d7a12" class="outline-3">
-<h3 id="orgf6d7a12"><span class="section-number-3">1.1</span> Treating Warnings as Errors</h3>
+<div id="outline-container-orgc7164e0" class="outline-3">
+<h3 id="orgc7164e0"><span class="section-number-3">1.1.</span> Treating Warnings as Errors</h3>
 <div class="outline-text-3" id="text-1-1">
 <p>
 If your build fails because of some non-harmful warnings, comment the
 <code>'-Werror',</code> line in the <code>SConstruct</code> file:
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #697375;"># </span><span style="color: #697375;">Treat warnings as errors but white list some warnings that we</span>
-<span style="color: #697375;"># </span><span style="color: #697375;">want to allow (e.g., deprecation warnings).</span>
-main.Append<span style="color: #4EB8CA;">(</span>CCFLAGS=<span style="color: #91b9c7;">[</span><span style="color: #fbaed2;">'-Wno-error=deprecated-declarations'</span>,
+<pre class="src src-python"><span style="color: #697375;"># Treat warnings as errors but white list some warnings that we</span>
+<span style="color: #697375;"># want to allow (e.g., deprecation warnings).</span>
+main.<span style="color: #b9c791; font-style: italic;">Append</span><span style="color: #4EB8CA;">(</span><span style="color: #ef6787;">CCFLAGS</span><span style="color: #4EB8CA;">=</span><span style="color: #91b9c7;">[</span><span style="color: #fbaed2;">'-Wno-error=deprecated-declarations'</span>,
                      <span style="color: #fbaed2;">'-Wno-error=deprecated'</span>,
-                     <span style="color: #697375;">#</span><span style="color: #697375;">'-Werror',</span>
+                     <span style="color: #697375;">#'-Werror',</span>
                     <span style="color: #91b9c7;">]</span><span style="color: #4EB8CA;">)</span>
 </pre>
 </div>
 </div>
 </div>
 
-<div id="outline-container-org817b669" class="outline-3">
-<h3 id="org817b669"><span class="section-number-3">1.2</span> Python? No such file or directory!</h3>
+<div id="outline-container-org8547abb" class="outline-3">
+<h3 id="org8547abb"><span class="section-number-3">1.2.</span> Python? No such file or directory!</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 If your build fails because <code>/usr/bin/env: 'python': No such file or
@@ -313,7 +291,7 @@ If your build fails because <code>/usr/bin/env: 'python': No such file or
 </div>
 
 <div id="outline-container-runtime" class="outline-2">
-<h2 id="runtime"><span class="section-number-2">2</span> Runtime Errors</h2>
+<h2 id="runtime"><span class="section-number-2">2.</span> Runtime Errors</h2>
 <div class="outline-text-2" id="text-runtime">
 <p>
 This guide reference some gem5 runtime errors that we had to solve during our
@@ -322,26 +300,26 @@ someone.
 </p>
 </div>
 
-<div id="outline-container-org8f9555e" class="outline-3">
-<h3 id="org8f9555e"><span class="section-number-3">2.1</span> AttributeError: Can't resolve proxy 'any' of type 'XXX' from 'XXX'</h3>
+<div id="outline-container-org1a3a6c2" class="outline-3">
+<h3 id="org1a3a6c2"><span class="section-number-3">2.1.</span> AttributeError: Can't resolve proxy 'any' of type 'XXX' from 'XXX'</h3>
 <div class="outline-text-3" id="text-2-1">
 </div>
-<div id="outline-container-org64d75e4" class="outline-4">
-<h4 id="org64d75e4"><span class="section-number-4">2.1.1</span> Goal</h4>
+<div id="outline-container-org88bf207" class="outline-4">
+<h4 id="org88bf207"><span class="section-number-4">2.1.1.</span> Goal</h4>
 <div class="outline-text-4" id="text-2-1-1">
 <ul class="org-ul">
 <li><p>
 This is the error we will troubleshoot:
 </p>
-<pre class="example" id="org23b7e01">
+<pre class="example" id="org5ca669b">
 AttributeError: Can't resolve proxy 'any' of type 'ArmSystem' from 'system.realview.generic_timer'
 </pre></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-orgea5eed0" class="outline-4">
-<h4 id="orgea5eed0"><span class="section-number-4">2.1.2</span> Explanation</h4>
+<div id="outline-container-orgd00448e" class="outline-4">
+<h4 id="orgd00448e"><span class="section-number-4">2.1.2.</span> Explanation</h4>
 <div class="outline-text-4" id="text-2-1-2">
 <ul class="org-ul">
 <li>The <i>proxy parameter</i> in <i>gem5</i> is a <i>Python</i> helper mechanism which is
@@ -353,16 +331,16 @@ class into the <code>proxy.py</code> file. Consider this <i>special proxy parame
 (<code>Parent.any</code>):
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #47ba99;">system</span> = Param.System<span style="color: #4EB8CA;">(</span>Parent.<span style="color: #91b9c7;">any</span>, <span style="color: #fbaed2;">"The system the object is part of"</span><span style="color: #4EB8CA;">)</span>
+<pre class="src src-python"><span style="color: #47ba99;">system</span> <span style="color: #4EB8CA;">=</span> <span style="color: #b9c791;">Param</span>.<span style="color: #b9c791; font-style: italic;">System</span><span style="color: #4EB8CA;">(</span><span style="color: #b9c791;">Parent</span>.<span style="color: #4FA8A3; font-style: italic;">any</span>, <span style="color: #fbaed2;">"The system the object is part of"</span><span style="color: #4EB8CA;">)</span>
 </pre>
 </div>
 <ul class="org-ul">
 <li>This is its special implementation:</li>
 </ul>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #4EB8CA;">class</span> <span style="color: #b9c791;">AnyProxy</span><span style="color: #4EB8CA;">(</span>BaseProxy<span style="color: #4EB8CA;">)</span>:
-    <span style="color: #4EB8CA;">def</span> <span style="color: #91b9c7;">find</span><span style="color: #4EB8CA;">(</span><span style="color: #4EB8CA;">self</span>, obj<span style="color: #4EB8CA;">)</span>:
-        <span style="color: #4EB8CA;">return</span> obj.find_any<span style="color: #4EB8CA;">(</span><span style="color: #4EB8CA;">self</span>._pdesc.ptype<span style="color: #4EB8CA;">)</span>
+<pre class="src src-python"><span style="color: #4EB8CA;">class</span> <span style="color: #b9c791;">AnyProxy</span><span style="color: #4EB8CA;">(</span><span style="color: #b9c791;">BaseProxy</span><span style="color: #4EB8CA;">)</span>:
+    <span style="color: #4EB8CA;">def</span> <span style="color: #91b9c7;">find</span><span style="color: #4EB8CA;">(</span><span style="color: #4EB8CA;">self</span>, <span style="color: #47ba99;">obj</span><span style="color: #4EB8CA;">)</span>:
+        <span style="color: #4EB8CA;">return</span> obj.<span style="color: #ef6787; font-style: italic;">find_any</span><span style="color: #4EB8CA;">(</span><span style="color: #4EB8CA;">self</span>.<span style="color: #4FA8A3; font-style: italic;">_pdesc</span>.<span style="color: #4FA8A3; font-style: italic;">ptype</span><span style="color: #4EB8CA;">)</span>
 
     <span style="color: #4EB8CA;">def</span> <span style="color: #91b9c7;">path</span><span style="color: #4EB8CA;">(</span><span style="color: #4EB8CA;">self</span><span style="color: #4EB8CA;">)</span>:
         <span style="color: #4EB8CA;">return</span> <span style="color: #fbaed2;">'any'</span>
@@ -378,8 +356,8 @@ it's name in the parent object.</li>
 </div>
 </div>
 
-<div id="outline-container-org07914bc" class="outline-4">
-<h4 id="org07914bc"><span class="section-number-4">2.1.3</span> Resolution</h4>
+<div id="outline-container-org39031dd" class="outline-4">
+<h4 id="org39031dd"><span class="section-number-4">2.1.3.</span> Resolution</h4>
 <div class="outline-text-4" id="text-2-1-3">
 <ul class="org-ul">
 <li>To resolve our problem, we have to find the <i>special proxy parameter</i>:
@@ -393,7 +371,7 @@ In the <code>GenericTimer</code> class, we can find the <i>special proxy paramet
 mentioned in the message:
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #47ba99;">system</span> = Param.ArmSystem<span style="color: #4EB8CA;">(</span>Parent.<span style="color: #91b9c7;">any</span>, <span style="color: #fbaed2;">"system"</span><span style="color: #4EB8CA;">)</span>
+<pre class="src src-python"><span style="color: #47ba99;">system</span> <span style="color: #4EB8CA;">=</span> <span style="color: #b9c791;">Param</span>.<span style="color: #b9c791; font-style: italic;">ArmSystem</span><span style="color: #4EB8CA;">(</span><span style="color: #b9c791;">Parent</span>.<span style="color: #4FA8A3; font-style: italic;">any</span>, <span style="color: #fbaed2;">"system"</span><span style="color: #4EB8CA;">)</span>
 </pre>
 </div></li>
 <li>This parameter search for an <code>ArmSystem</code> in the parent (<code>VExpress_GEM5_V1</code>).</li>
@@ -410,18 +388,18 @@ object to an <code>ArmSystem</code> object, or an object which inherit or the
 </div>
 </div>
 
-<div id="outline-container-orgd7d9b73" class="outline-3">
-<h3 id="orgd7d9b73"><span class="section-number-3">2.2</span> gem5 has encountered a segmentation fault!</h3>
+<div id="outline-container-org6d5c434" class="outline-3">
+<h3 id="org6d5c434"><span class="section-number-3">2.2.</span> gem5 has encountered a segmentation fault!</h3>
 <div class="outline-text-3" id="text-2-2">
 </div>
-<div id="outline-container-org2e5d380" class="outline-4">
-<h4 id="org2e5d380"><span class="section-number-4">2.2.1</span> Goal</h4>
+<div id="outline-container-orgfc15c1e" class="outline-4">
+<h4 id="orgfc15c1e"><span class="section-number-4">2.2.1.</span> Goal</h4>
 <div class="outline-text-4" id="text-2-2-1">
 <ul class="org-ul">
 <li><p>
 Troubleshoot this kind of, is not understand, cryptic error:
 </p>
-<pre class="example" id="org1762214">
+<pre class="example" id="orgdff9724">
 gem5 has encountered a segmentation fault!
 
 --- BEGIN LIBC BACKTRACE ---
@@ -463,8 +441,8 @@ gem5 has encountered a segmentation fault!
 </div>
 </div>
 
-<div id="outline-container-orgadcc938" class="outline-4">
-<h4 id="orgadcc938"><span class="section-number-4">2.2.2</span> Explanation</h4>
+<div id="outline-container-org3dab617" class="outline-4">
+<h4 id="org3dab617"><span class="section-number-4">2.2.2.</span> Explanation</h4>
 <div class="outline-text-4" id="text-2-2-2">
 <ul class="org-ul">
 <li>Arrive often with a <code>NULL</code> pointer which is dereferenced in <i>gem5</i>, caused by:
@@ -476,8 +454,8 @@ gem5 has encountered a segmentation fault!
 </div>
 </div>
 
-<div id="outline-container-orgb2d9f66" class="outline-4">
-<h4 id="orgb2d9f66"><span class="section-number-4">2.2.3</span> Resolution</h4>
+<div id="outline-container-org9f71496" class="outline-4">
+<h4 id="org9f71496"><span class="section-number-4">2.2.3.</span> Resolution</h4>
 <div class="outline-text-4" id="text-2-2-3">
 <ul class="org-ul">
 <li>Best thing is to use <i>gdb</i> here.</li>
@@ -497,25 +475,25 @@ where you want to go.</li>
 At some point, you will arrive at your segfault:
 </p>
 
-<pre class="example" id="org06ca573">
+<pre class="example" id="org144b4d1">
 Program received signal SIGSEGV, Segmentation fault.
 0x00005555568a15d4 in ArmSystem::ArmSystem (this=0x5555595cfb00, p=0x555558cba1a0) at build/ARM/arch/arm/system.cc:77
 77	        _resetAddr = workload-&gt;getEntry();
 </pre>
-<pre class="example" id="org10142e2">
+<pre class="example" id="org00b125c">
 $rsp   : 0x00007fffffffc6c0  →  0x00007ffff50c6398  →  0x0000000000000000
 $rbp   : 0x00005555595cfb00  →  0x0000555557e10020  →  0x0000555556d1fd70  →  &lt;ArmSystem::~ArmSystem()+0&gt; lea rax, [rip+0x10f02a9]        # 0x555557e10020 &lt;_ZTV9ArmSystem+16&gt;
 $rsi   : 0x0000555557f3e0a0  →  0x0000555558f53140  →  0x0000555558f53120  →  0x000055555961c540  →  0x000055555961c560  →  0x000055555961c580  →  0x000055555961c5a0  →  0x000055555961c5c0
 $rdi   : 0x0               
 $rip   : 0x00005555568a15d4  →  &lt;ArmSystem::ArmSystem(ArmSystemParams*)+276&gt; mov rax, QWORD PTR [rdi]
 </pre>
-<pre class="example" id="org87a8f5b">
+<pre class="example" id="org92f8d98">
   0x5555568a15c4 &lt;ArmSystem::ArmSystem(ArmSystemParams*)+260&gt; cmp    BYTE PTR [rbx+0x144], 0x0
   0x5555568a15cb &lt;ArmSystem::ArmSystem(ArmSystemParams*)+267&gt; je     0x5555568a1648 &lt;ArmSystem::ArmSystem(ArmSystemParams*)+392&gt;
   0x5555568a15cd &lt;ArmSystem::ArmSystem(ArmSystemParams*)+269&gt; mov    rdi, QWORD PTR [rbp+0x190]
 → 0x5555568a15d4 &lt;ArmSystem::ArmSystem(ArmSystemParams*)+276&gt; mov    rax, QWORD PTR [rdi]
 </pre>
-<pre class="example" id="org3e04c8b">
+<pre class="example" id="org69105ee">
     72	       _havePAN(p-&gt;have_pan),
     73	       semihosting(p-&gt;semihosting),
     74	       multiProc(p-&gt;multi_proc)
@@ -538,26 +516,26 @@ the wrong <code>SimObject</code> by inadvertence.</li>
 </div>
 </div>
 
-<div id="outline-container-org02f50c8" class="outline-3">
-<h3 id="org02f50c8"><span class="section-number-3">2.3</span> fatal: XXX</h3>
+<div id="outline-container-orgb6297e3" class="outline-3">
+<h3 id="orgb6297e3"><span class="section-number-3">2.3.</span> fatal: XXX</h3>
 <div class="outline-text-3" id="text-2-3">
 </div>
-<div id="outline-container-org574ab96" class="outline-4">
-<h4 id="org574ab96"><span class="section-number-4">2.3.1</span> Goal</h4>
+<div id="outline-container-org8aa5553" class="outline-4">
+<h4 id="org8aa5553"><span class="section-number-4">2.3.1.</span> Goal</h4>
 <div class="outline-text-4" id="text-2-3-1">
 <ul class="org-ul">
 <li><p>
 Troubleshoot this kind of error:
 </p>
-<pre class="example" id="orgc7d7a2f">
+<pre class="example" id="org01a5883">
 fatal: Must specify at least one workload!
 </pre></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org1654124" class="outline-4">
-<h4 id="org1654124"><span class="section-number-4">2.3.2</span> Explanation</h4>
+<div id="outline-container-org2e4a701" class="outline-4">
+<h4 id="org2e4a701"><span class="section-number-4">2.3.2.</span> Explanation</h4>
 <div class="outline-text-4" id="text-2-3-2">
 <ul class="org-ul">
 <li>This error is generated in the <i>C++</i> source code of <i>gem5</i>, by its error
@@ -566,8 +544,8 @@ handling mechanism.</li>
 </div>
 </div>
 
-<div id="outline-container-org2d11698" class="outline-4">
-<h4 id="org2d11698"><span class="section-number-4">2.3.3</span> Resolution</h4>
+<div id="outline-container-org586d424" class="outline-4">
+<h4 id="org586d424"><span class="section-number-4">2.3.3.</span> Resolution</h4>
 <div class="outline-text-4" id="text-2-3-3">
 <ul class="org-ul">
 <li><p>
@@ -592,26 +570,26 @@ We can then search, in the source code, the source of the error:
 </div>
 
 <div class="org-src-container">
-<pre class="src src-C"><span style="color: #b9c791;">DerivO3CPU</span> *
-<span style="color: #91b9c7;">DerivO3CPUParams</span>::create<span style="color: #4EB8CA;">()</span>
-<span style="color: #4EB8CA;">{</span>
-    <span style="color: #b9c791;">ThreadID</span> <span style="color: #47ba99;">actual_num_threads</span>;
-    <span style="color: #4EB8CA;">if</span> <span style="color: #91b9c7;">(</span>FullSystem<span style="color: #91b9c7;">)</span> <span style="color: #91b9c7;">{</span>
-        <span style="color: #697375;">// </span><span style="color: #697375;">Full-system only supports a single thread for the moment.</span>
-        actual_num_threads = <span style="color: #ef6787;">1</span>;
-    <span style="color: #91b9c7;">}</span> <span style="color: #4EB8CA;">else</span> <span style="color: #91b9c7;">{</span>
-        <span style="color: #4EB8CA;">if</span> <span style="color: #4FA8A3;">(</span>workload.size<span style="color: #c791aa;">()</span> &gt; numThreads<span style="color: #4FA8A3;">)</span> <span style="color: #4FA8A3;">{</span>
-            fatal<span style="color: #c791aa;">(</span><span style="color: #fbaed2;">"Workload Size (%i) &gt; Max Supported Threads (%i) on This CPU"</span>,
-                  workload.size<span style="color: #807f96;">()</span>, numThreads<span style="color: #c791aa;">)</span>;
-        <span style="color: #4FA8A3;">}</span> <span style="color: #4EB8CA;">else</span> <span style="color: #4EB8CA;">if</span> <span style="color: #4FA8A3;">(</span>workload.size<span style="color: #c791aa;">()</span> == <span style="color: #ef6787;">0</span><span style="color: #4FA8A3;">)</span> <span style="color: #4FA8A3;">{</span>
-            fatal<span style="color: #c791aa;">(</span><span style="color: #fbaed2;">"Must specify at least one workload!"</span><span style="color: #c791aa;">)</span>;
-        <span style="color: #4FA8A3;">}</span>
+<pre class="src src-C">DerivO3CPU <span style="color: #4EB8CA;">*</span>
+DerivO3CPUParams::<span style="color: #ef6787;">create</span><span style="color: #4EB8CA; background-color: #212121;">()</span>
+<span style="color: #4EB8CA; background-color: #212121;">{</span>
+    <span style="color: #b9c791;">ThreadID</span> <span style="color: #47ba99;">actual_num_threads</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #4EB8CA;">if</span> <span style="color: #91b9c7; background-color: #212121;">(</span>FullSystem<span style="color: #91b9c7; background-color: #212121;">)</span> <span style="color: #91b9c7; background-color: #212121;">{</span>
+        <span style="color: #697375;">// Full-system only supports a single thread for the moment.</span>
+        <span style="color: #47ba99;">actual_num_threads</span> <span style="color: #4EB8CA;">=</span> <span style="color: #4FA8A3;">1</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #91b9c7; background-color: #212121;">}</span> <span style="color: #4EB8CA;">else</span> <span style="color: #91b9c7; background-color: #212121;">{</span>
+        <span style="color: #4EB8CA;">if</span> <span style="color: #4FA8A3; background-color: #212121;">(</span>workload<span style="color: #bdbdb3; background-color: #212121;">.</span><span style="color: #ef6787; font-style: italic;">size</span><span style="color: #c791aa; background-color: #212121;">()</span> <span style="color: #4EB8CA;">&gt;</span> numThreads<span style="color: #4FA8A3; background-color: #212121;">)</span> <span style="color: #4FA8A3; background-color: #212121;">{</span>
+            <span style="color: #ef6787;">fatal</span><span style="color: #c791aa; background-color: #212121;">(</span><span style="color: #fbaed2;">"Workload Size (%i) &gt; Max Supported Threads (%i) on This CPU"</span><span style="color: #bdbdb3; background-color: #212121;">,</span>
+                  workload<span style="color: #bdbdb3; background-color: #212121;">.</span><span style="color: #ef6787; font-style: italic;">size</span><span style="color: #807f96; background-color: #212121;">()</span><span style="color: #bdbdb3; background-color: #212121;">,</span> numThreads<span style="color: #c791aa; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+        <span style="color: #4FA8A3; background-color: #212121;">}</span> <span style="color: #4EB8CA;">else</span> <span style="color: #4EB8CA;">if</span> <span style="color: #4FA8A3; background-color: #212121;">(</span>workload<span style="color: #bdbdb3; background-color: #212121;">.</span><span style="color: #ef6787; font-style: italic;">size</span><span style="color: #c791aa; background-color: #212121;">()</span> <span style="color: #4EB8CA;">==</span> <span style="color: #4FA8A3;">0</span><span style="color: #4FA8A3; background-color: #212121;">)</span> <span style="color: #4FA8A3; background-color: #212121;">{</span>
+            <span style="color: #ef6787;">fatal</span><span style="color: #c791aa; background-color: #212121;">(</span><span style="color: #fbaed2;">"Must specify at least one workload!"</span><span style="color: #c791aa; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+        <span style="color: #4FA8A3; background-color: #212121;">}</span>
 
-        <span style="color: #697375;">// </span><span style="color: #697375;">In non-full-system mode, we infer the number of threads from</span>
-        <span style="color: #697375;">// </span><span style="color: #697375;">the workload if it's not explicitly specified.</span>
-        actual_num_threads =
-            <span style="color: #4FA8A3;">(</span>numThreads &gt;= workload.size<span style="color: #c791aa;">()</span><span style="color: #4FA8A3;">)</span> ? numThreads : workload.size<span style="color: #4FA8A3;">()</span>;
-    <span style="color: #91b9c7;">}</span>
+        <span style="color: #697375;">// In non-full-system mode, we infer the number of threads from</span>
+        <span style="color: #697375;">// the workload if it's not explicitly specified.</span>
+        <span style="color: #47ba99;">actual_num_threads</span> <span style="color: #4EB8CA;">=</span>
+            <span style="color: #4FA8A3; background-color: #212121;">(</span>numThreads <span style="color: #4EB8CA;">&gt;=</span> workload<span style="color: #bdbdb3; background-color: #212121;">.</span><span style="color: #ef6787; font-style: italic;">size</span><span style="color: #c791aa; background-color: #212121;">()</span><span style="color: #4FA8A3; background-color: #212121;">)</span> <span style="color: #4EB8CA;">?</span> numThreads <span style="color: #4EB8CA;">:</span> workload<span style="color: #bdbdb3; background-color: #212121;">.</span><span style="color: #ef6787; font-style: italic;">size</span><span style="color: #4FA8A3; background-color: #212121;">()</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #91b9c7; background-color: #212121;">}</span>
 </pre>
 </div></li>
 
@@ -627,26 +605,26 @@ variable of the <code>Root</code> object.</li>
 </div>
 </div>
 
-<div id="outline-container-orgbb0589f" class="outline-3">
-<h3 id="orgbb0589f"><span class="section-number-3">2.4</span> panic: XXX port of XXX not connected to anything!</h3>
+<div id="outline-container-org26082bf" class="outline-3">
+<h3 id="org26082bf"><span class="section-number-3">2.4.</span> panic: XXX port of XXX not connected to anything!</h3>
 <div class="outline-text-3" id="text-2-4">
 </div>
-<div id="outline-container-org711dcc6" class="outline-4">
-<h4 id="org711dcc6"><span class="section-number-4">2.4.1</span> Goal</h4>
+<div id="outline-container-org0de3669" class="outline-4">
+<h4 id="org0de3669"><span class="section-number-4">2.4.1.</span> Goal</h4>
 <div class="outline-text-4" id="text-2-4-1">
 <ul class="org-ul">
 <li><p>
 Troubleshoot this kind of error:
 </p>
-<pre class="example" id="org915a3de">
+<pre class="example" id="orgb3d495e">
 panic: Pio port of system.realview.generic_timer_mem not connected to anything!
 </pre></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org9ac90f9" class="outline-4">
-<h4 id="org9ac90f9"><span class="section-number-4">2.4.2</span> Explanation</h4>
+<div id="outline-container-org086b285" class="outline-4">
+<h4 id="org086b285"><span class="section-number-4">2.4.2.</span> Explanation</h4>
 <div class="outline-text-4" id="text-2-4-2">
 <ul class="org-ul">
 <li>This error is generated in the <i>C++</i> source code of <i>gem5</i>, by its error
@@ -657,8 +635,8 @@ programmed or forgotten.</li>
 </div>
 </div>
 
-<div id="outline-container-orgd2148cc" class="outline-4">
-<h4 id="orgd2148cc"><span class="section-number-4">2.4.3</span> Resolution</h4>
+<div id="outline-container-org3d3bccd" class="outline-4">
+<h4 id="org3d3bccd"><span class="section-number-4">2.4.3.</span> Resolution</h4>
 <div class="outline-text-4" id="text-2-4-3">
 <ul class="org-ul">
 <li>The linkage of this port should perhaps have been done directly by you,
@@ -674,18 +652,18 @@ give a graphical representation of the system (with links between
 </div>
 </div>
 
-<div id="outline-container-org0f78286" class="outline-3">
-<h3 id="org0f78286"><span class="section-number-3">2.5</span> Kernel panic - not syncing: VFS: Unable to mount root fs</h3>
+<div id="outline-container-org41117df" class="outline-3">
+<h3 id="org41117df"><span class="section-number-3">2.5.</span> Kernel panic - not syncing: VFS: Unable to mount root fs</h3>
 <div class="outline-text-3" id="text-2-5">
 </div>
-<div id="outline-container-orgff92567" class="outline-4">
-<h4 id="orgff92567"><span class="section-number-4">2.5.1</span> Goal</h4>
+<div id="outline-container-orgb1f2453" class="outline-4">
+<h4 id="orgb1f2453"><span class="section-number-4">2.5.1.</span> Goal</h4>
 <div class="outline-text-4" id="text-2-5-1">
 <ul class="org-ul">
 <li><p>
 Troubleshoot this <i>kernel panic</i>:
 </p>
-<pre class="example" id="org837b9c8">
+<pre class="example" id="orgee68c57">
 [    0.224367] List of all partitions:
 [    0.224394] fe00         1048320 vda 
 [    0.224397]  driver: virtio_blk
@@ -723,8 +701,8 @@ Troubleshoot this <i>kernel panic</i>:
 </div>
 </div>
 
-<div id="outline-container-orgcae60e7" class="outline-4">
-<h4 id="orgcae60e7"><span class="section-number-4">2.5.2</span> Explanation</h4>
+<div id="outline-container-org91c87ee" class="outline-4">
+<h4 id="org91c87ee"><span class="section-number-4">2.5.2.</span> Explanation</h4>
 <div class="outline-text-4" id="text-2-5-2">
 <ul class="org-ul">
 <li>This error is generated by the <i>Linux</i> kernel, in a
@@ -741,8 +719,8 @@ systems are correctly loaded.</li>
 </div>
 </div>
 
-<div id="outline-container-org9888d3d" class="outline-4">
-<h4 id="org9888d3d"><span class="section-number-4">2.5.3</span> Resolution</h4>
+<div id="outline-container-orgbac8876" class="outline-4">
+<h4 id="orgbac8876"><span class="section-number-4">2.5.3.</span> Resolution</h4>
 <div class="outline-text-4" id="text-2-5-3">
 <ul class="org-ul">
 <li><p>
@@ -751,14 +729,14 @@ The problem lying into the <b>specification of the root partition</b>, on the
 correctly set the root partition, like this:
 </p>
 <div class="org-src-container">
-<pre class="src src-python"><span style="color: #697375;"># </span><span style="color: #697375;">Linux kernel boot command flags.</span>
-<span style="color: #47ba99;">kernel_cmd</span> = <span style="color: #4EB8CA;">[</span>
+<pre class="src src-python"><span style="color: #697375;"># Linux kernel boot command flags.</span>
+<span style="color: #47ba99;">kernel_cmd</span> <span style="color: #4EB8CA;">=</span> <span style="color: #4EB8CA;">[</span>
     ...
-    <span style="color: #697375;"># </span><span style="color: #697375;">Tell Linux where to find the root disk image.</span>
-    <span style="color: #fbaed2;">"root=/dev/vda1"</span>,
+    <span style="color: #697375;"># Tell Linux where to find the root disk image.</span>
+    "root<span style="color: #4EB8CA;">=/</span>dev<span style="color: #4EB8CA;">/</span>vda1<span style="color: #fbaed2;">"</span>,
     ...
 <span style="color: #4EB8CA;">]</span>
-<span style="color: #47ba99;">system.workload.command_line</span> = <span style="color: #fbaed2;">" "</span>.join<span style="color: #4EB8CA;">(</span>kernel_cmd<span style="color: #4EB8CA;">)</span>
+system.<span style="color: #4FA8A3; font-style: italic;">workload</span>.<span style="color: #47ba99; font-style: italic;">command_line</span> <span style="color: #4EB8CA;">=</span> <span style="color: #fbaed2;">" "</span>.<span style="color: #ef6787; font-style: italic;">join</span><span style="color: #4EB8CA;">(</span>kernel_cmd<span style="color: #4EB8CA;">)</span>
 </pre>
 </div></li>
 <li>Don't forget to replace <code>...</code> with other correct options.</li>
@@ -772,8 +750,8 @@ device.</li>
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-04-01 jeu. 13:44</p>
+<p class="author">Author: Pierre AYOUB Pierre Ayoub</p>
+<p class="date">Created: 2023-07-27 jeu. 16:01</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>

@@ -3,14 +3,14 @@
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
-<!-- 2021-06-01 mar. 15:58 -->
+<!-- 2023-07-27 jeu. 15:01 -->
 <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Reproducing Spectre Attack with gem5, How To Do It Right?</title>
-<meta name="generator" content="Org mode" />
-<meta name="author" content="Pierre Ayoub" />
-<style type="text/css">
- <!--/*--><![CDATA[/*><!--*/
+<meta name="author" content="Pierre AYOUB Pierre Ayoub" />
+<meta name="generator" content="Org Mode" />
+<style>
+  #content { max-width: 60em; margin: auto; }
   .title  { text-align: center;
              margin-bottom: .2em; }
   .subtitle { text-align: center;
@@ -31,8 +31,9 @@
   #postamble p, #preamble p { font-size: 90%; margin: .2em; }
   p.verse { margin-left: 3%; }
   pre {
-    border: 1px solid #ccc;
-    box-shadow: 3px 3px 3px #eee;
+    border: 1px solid #e6e6e6;
+    border-radius: 3px;
+    background-color: #f2f2f2;
     padding: 8pt;
     font-family: monospace;
     overflow: auto;
@@ -41,21 +42,21 @@
   pre.src {
     position: relative;
     overflow: auto;
-    padding-top: 1.2em;
   }
   pre.src:before {
     display: none;
     position: absolute;
-    background-color: white;
-    top: -10px;
-    right: 10px;
+    top: -8px;
+    right: 12px;
     padding: 3px;
-    border: 1px solid black;
+    color: #555;
+    background-color: #f2f2f299;
   }
-  pre.src:hover:before { display: inline;}
+  pre.src:hover:before { display: inline; margin-top: 14px;}
   /* Languages per Org manual */
   pre.src-asymptote:before { content: 'Asymptote'; }
   pre.src-awk:before { content: 'Awk'; }
+  pre.src-authinfo::before { content: 'Authinfo'; }
   pre.src-C:before { content: 'C'; }
   /* pre.src-C++ doesn't work in CSS */
   pre.src-clojure:before { content: 'Clojure'; }
@@ -190,42 +191,19 @@
     { font-size: 10px; font-weight: bold; white-space: nowrap; }
   .org-info-js_search-highlight
     { background-color: #ffff00; color: #000000; font-weight: bold; }
-  .org-svg { width: 90%; }
-  /*]]>*/-->
+  .org-svg { }
 </style>
-<link rel="stylesheet" href="https://sandyuraz.com/styles/org.min.css">
-<script type="text/javascript">
-// @license magnet:?xt=urn:btih:e95b018ef3580986a04669f1b5879592219e2a7a&dn=public-domain.txt Public Domain
-<!--/*--><![CDATA[/*><!--*/
-     function CodeHighlightOn(elem, id)
-     {
-       var target = document.getElementById(id);
-       if(null != target) {
-         elem.classList.add("code-highlighted");
-         target.classList.add("code-highlighted");
-       }
-     }
-     function CodeHighlightOff(elem, id)
-     {
-       var target = document.getElementById(id);
-       if(null != target) {
-         elem.classList.remove("code-highlighted");
-         target.classList.remove("code-highlighted");
-       }
-     }
-    /*]]>*///-->
-// @license-end
-</script>
+<link rel="stylesheet" type="text/css" href="/home/pierre/work/info/org/orgcss/docs/org.css"/>
 </head>
 <body>
-<div id="content">
+<div id="content" class="content">
 <h1 class="title">Reproducing Spectre Attack with gem5, How To Do It Right?</h1>
-<div id="table-of-contents">
+<div id="table-of-contents" role="doc-toc">
 <h2>Table of Contents</h2>
-<div id="text-table-of-contents">
+<div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org6683276">1. Introduction</a></li>
-<li><a href="#org056d18e">2. HowTo</a>
+<li><a href="#org0efa348">1. Introduction</a></li>
+<li><a href="#orgd02b1bc">2. HowTo</a>
 <ul>
 <li><a href="#setup_arm">2.1. How to Setup the Native ARM System</a></li>
 <li><a href="#howto_spectre">2.2. How to Perform the Spectre Attack</a></li>
@@ -234,19 +212,19 @@
 <li><a href="#howto_konata">2.5. How to Visualize the Pipeline of a gem5 Processor with Konata</a></li>
 </ul>
 </li>
-<li><a href="#org8e024b2">3. Implementations</a>
+<li><a href="#org99c4f47">3. Implementations</a>
 <ul>
 <li><a href="#implem_spectre">3.1. Spectre</a></li>
 <li><a href="#implem_gem5">3.2. gem5</a></li>
 </ul>
 </li>
-<li><a href="#org1e35345">4. Appendices</a></li>
+<li><a href="#orgd6ad2de">4. Appendices</a></li>
 </ul>
 </div>
 </div>
 
-<div id="outline-container-org6683276" class="outline-2">
-<h2 id="org6683276"><span class="section-number-2">1</span> Introduction</h2>
+<div id="outline-container-org0efa348" class="outline-2">
+<h2 id="org0efa348"><span class="section-number-2">1.</span> Introduction</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Welcome to the additional web page from the "<a href="https://github.com/pierreay/reproduce-spectre-gem5/blob/main/docs/conferences/eurosec21/paper.pdf">Reproducing Spectre Attack with
@@ -273,8 +251,8 @@ This web page is part of a <a href="https://github.com/pierreay/reproduce-spectr
 </div>
 </div>
 
-<div id="outline-container-org056d18e" class="outline-2">
-<h2 id="org056d18e"><span class="section-number-2">2</span> HowTo</h2>
+<div id="outline-container-orgd02b1bc" class="outline-2">
+<h2 id="orgd02b1bc"><span class="section-number-2">2.</span> HowTo</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 In this section, we will guide through step-by-step in the usage of our
@@ -285,7 +263,7 @@ below (note that shell variables are shared across sections). Let's start!
 </div>
 
 <div id="outline-container-setup_arm" class="outline-3">
-<h3 id="setup_arm"><span class="section-number-3">2.1</span> How to Setup the Native ARM System</h3>
+<h3 id="setup_arm"><span class="section-number-3">2.1.</span> How to Setup the Native ARM System</h3>
 <div class="outline-text-3" id="text-setup_arm">
 <p>
 To reproduce this work, you will need:
@@ -362,7 +340,7 @@ You are now ready to compile and reproduce Spectre on the Raspberry Pi.
 </div>
 
 <div id="outline-container-howto_spectre" class="outline-3">
-<h3 id="howto_spectre"><span class="section-number-3">2.2</span> How to Perform the Spectre Attack</h3>
+<h3 id="howto_spectre"><span class="section-number-3">2.2.</span> How to Perform the Spectre Attack</h3>
 <div class="outline-text-3" id="text-howto_spectre">
 <p>
 We assume that you are on the ARM system described in Section <a href="#setup_arm">2.1</a> or
@@ -400,7 +378,7 @@ Test if the binary is working by displaying a useful help message:
 </pre>
 </div>
 
-<pre class="example" id="org0283040">
+<pre class="example" id="org76a1c2e">
 Usage: spectre [OPTION...]
 Spectre -- A Spectre implementation useful for research
 
@@ -477,7 +455,7 @@ make
 </div>
 
 <div id="outline-container-howto_gem5_setup" class="outline-3">
-<h3 id="howto_gem5_setup"><span class="section-number-3">2.3</span> How to Setup gem5 for a Full-System Simulation</h3>
+<h3 id="howto_gem5_setup"><span class="section-number-3">2.3.</span> How to Setup gem5 for a Full-System Simulation</h3>
 <div class="outline-text-3" id="text-howto_gem5_setup">
 <p>
 To reproduce this work, you will need:
@@ -565,7 +543,7 @@ simulation script:
 </pre>
 </div>
 
-<pre class="example" id="org7a76cb3">
+<pre class="example" id="org023cfa7">
 usage: RPIv4.py [-h] [-v] [--num-cores NUM_CORES] [--se] [--fs]
                 [--fs-kernel FS_KERNEL] [--fs-disk-image FS_DISK_IMAGE]
                 [--fs-workload-image FS_WORKLOAD_IMAGE]
@@ -729,7 +707,7 @@ communicate with a gem5 simulation.
 </div>
 
 <div id="outline-container-howto_gem5" class="outline-3">
-<h3 id="howto_gem5"><span class="section-number-3">2.4</span> How to Simulate Spectre with gem5</h3>
+<h3 id="howto_gem5"><span class="section-number-3">2.4.</span> How to Simulate Spectre with gem5</h3>
 <div class="outline-text-3" id="text-howto_gem5">
 <p>
 We assume that you are able to compile and know how to perform a Spectre
@@ -878,7 +856,7 @@ following command to kill gem5:
 </div>
 
 <div id="outline-container-howto_konata" class="outline-3">
-<h3 id="howto_konata"><span class="section-number-3">2.5</span> How to Visualize the Pipeline of a gem5 Processor with Konata</h3>
+<h3 id="howto_konata"><span class="section-number-3">2.5.</span> How to Visualize the Pipeline of a gem5 Processor with Konata</h3>
 <div class="outline-text-3" id="text-howto_konata">
 <p>
 Konata is an external program allowing to see graphically the instructions
@@ -916,7 +894,7 @@ part and stop the simulation when you see the output text.
 When stopping the simulation, you will see a message like this one:
 </p>
 
-<pre class="example" id="orgc4da45c">
+<pre class="example" id="orga640bea">
 Exiting @ tick 3266927000 because user interrupt received
 </pre>
 
@@ -976,24 +954,24 @@ the main loop of the binary:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 1: </span>Main loop of Spectre, which iterate over every byte in the secret string (C code).</label><pre class="src src-c" id="orgb64644d"><span style="color: #4EB8CA;">while</span> <span style="color: #4EB8CA;">(</span><span style="color: #ef6787;">1</span><span style="color: #4EB8CA;">)</span> <span style="color: #4EB8CA;">{</span>
-    <span style="color: #697375;">// </span><span style="color: #697375;">for every byte in the string</span>
-    j = <span style="color: #91b9c7;">(</span>j + <span style="color: #ef6787;">1</span><span style="color: #91b9c7;">)</span> % <span style="color: #4EB8CA;">sizeof</span><span style="color: #91b9c7;">(</span>DATA_SECRET<span style="color: #91b9c7;">)</span>;
+<label class="org-src-name"><span class="listing-number">Listing 1: </span>Main loop of Spectre, which iterate over every byte in the secret string (C code).</label><pre class="src src-c" id="spectre_main_loop"><span style="color: #4EB8CA;">while</span> <span style="color: #4EB8CA; background-color: #212121;">(</span><span style="color: #4FA8A3;">1</span><span style="color: #4EB8CA; background-color: #212121;">)</span> <span style="color: #4EB8CA; background-color: #212121;">{</span>
+    <span style="color: #697375;">// for every byte in the string</span>
+    <span style="color: #47ba99;">j</span> <span style="color: #4EB8CA;">=</span> <span style="color: #91b9c7; background-color: #212121;">(</span>j <span style="color: #4EB8CA;">+</span> <span style="color: #4FA8A3;">1</span><span style="color: #91b9c7; background-color: #212121;">)</span> <span style="color: #4EB8CA;">%</span> <span style="color: #4EB8CA;">sizeof</span><span style="color: #91b9c7; background-color: #212121;">(</span><span style="color: #4FA8A3;">DATA_SECRET</span><span style="color: #91b9c7; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
 
-    <span style="color: #697375;">// </span><span style="color: #697375;">mistrain with valid index</span>
-    <span style="color: #4EB8CA;">for</span><span style="color: #91b9c7;">(</span><span style="color: #b9c791;">int</span> <span style="color: #47ba99;">y</span> = <span style="color: #ef6787;">0</span>; y &lt; <span style="color: #ef6787;">10</span>; y++<span style="color: #91b9c7;">)</span> <span style="color: #91b9c7;">{</span>
-        access_array<span style="color: #4FA8A3;">(</span><span style="color: #ef6787;">0</span><span style="color: #4FA8A3;">)</span>;
-    <span style="color: #91b9c7;">}</span>
-    <span style="color: #697375;">// </span><span style="color: #697375;">potential out-of-bounds access</span>
-    access_array<span style="color: #91b9c7;">(</span>j<span style="color: #91b9c7;">)</span>;
+    <span style="color: #697375;">// mistrain with valid index</span>
+    <span style="color: #4EB8CA;">for</span><span style="color: #91b9c7; background-color: #212121;">(</span><span style="color: #91b9c7;">int</span> <span style="color: #47ba99;">y</span> <span style="color: #4EB8CA;">=</span> <span style="color: #4FA8A3;">0</span><span style="color: #bdbdb3; background-color: #212121;">;</span> y <span style="color: #4EB8CA;">&lt;</span> <span style="color: #4FA8A3;">10</span><span style="color: #bdbdb3; background-color: #212121;">;</span> <span style="color: #47ba99;">y</span><span style="color: #4EB8CA;">++</span><span style="color: #91b9c7; background-color: #212121;">)</span> <span style="color: #91b9c7; background-color: #212121;">{</span>
+        <span style="color: #ef6787;">access_array</span><span style="color: #4FA8A3; background-color: #212121;">(</span><span style="color: #4FA8A3;">0</span><span style="color: #4FA8A3; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #91b9c7; background-color: #212121;">}</span>
+    <span style="color: #697375;">// potential out-of-bounds access</span>
+    <span style="color: #ef6787;">access_array</span><span style="color: #91b9c7; background-color: #212121;">(</span>j<span style="color: #91b9c7; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
 
-    <span style="color: #697375;">// </span><span style="color: #697375;">only show inaccessible values (SECRET)</span>
-    <span style="color: #4EB8CA;">if</span><span style="color: #91b9c7;">(</span>j &gt;= <span style="color: #4EB8CA;">sizeof</span><span style="color: #4FA8A3;">(</span>DATA<span style="color: #4FA8A3;">)</span> - <span style="color: #ef6787;">1</span><span style="color: #91b9c7;">)</span> <span style="color: #91b9c7;">{</span>
-        mfence<span style="color: #4FA8A3;">()</span>; <span style="color: #697375;">// </span><span style="color: #697375;">avoid speculation</span>
-        <span style="color: #697375;">// </span><span style="color: #697375;">Recover data from covert channel</span>
-        cache_decode_pretty<span style="color: #4FA8A3;">(</span>leaked, j<span style="color: #4FA8A3;">)</span>;
-    <span style="color: #91b9c7;">}</span>
- <span style="color: #4EB8CA;">}</span>
+    <span style="color: #697375;">// only show inaccessible values (SECRET)</span>
+    <span style="color: #4EB8CA;">if</span><span style="color: #91b9c7; background-color: #212121;">(</span>j <span style="color: #4EB8CA;">&gt;=</span> <span style="color: #4EB8CA;">sizeof</span><span style="color: #4FA8A3; background-color: #212121;">(</span><span style="color: #4FA8A3;">DATA</span><span style="color: #4FA8A3; background-color: #212121;">)</span> <span style="color: #4EB8CA;">-</span> <span style="color: #4FA8A3;">1</span><span style="color: #91b9c7; background-color: #212121;">)</span> <span style="color: #91b9c7; background-color: #212121;">{</span>
+        <span style="color: #ef6787;">mfence</span><span style="color: #4FA8A3; background-color: #212121;">()</span><span style="color: #bdbdb3; background-color: #212121;">;</span> <span style="color: #697375;">// avoid speculation</span>
+        <span style="color: #697375;">// Recover data from covert channel</span>
+        <span style="color: #ef6787;">cache_decode_pretty</span><span style="color: #4FA8A3; background-color: #212121;">(</span>leaked<span style="color: #bdbdb3; background-color: #212121;">,</span> j<span style="color: #4FA8A3; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #91b9c7; background-color: #212121;">}</span>
+ <span style="color: #4EB8CA; background-color: #212121;">}</span>
 </pre>
 </div>
 
@@ -1005,7 +983,7 @@ end of the second iteration.
 </p>
 
 
-<div id="orgd5e81c7" class="figure">
+<div id="orge8e28d2" class="figure">
 <p><img src="img/konata/konata_main_loop.png" alt="konata_main_loop.png" />
 </p>
 <p><span class="figure-number">Figure 1: </span>One main loop iteration.</p>
@@ -1013,7 +991,7 @@ end of the second iteration.
 
 <p>
 If you zoom-in on the bold line at the bottom right of the screenshot
-(discussed above), you can see this: it's the end of the <code class="src src-c"><span style="color: #91b9c7;">cache_decode_pretty</span><span style="color: #4EB8CA;">()</span></code> C function &#x2013; the receiver part of the
+(discussed above), you can see this: it's the end of the <code class="src src-c"><span style="color: #ef6787;">cache_decode_pretty</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code> C function &#x2013; the receiver part of the
 covert-channel &#x2013;, where there is a 100 times loop over a <code>volatile</code>
 variable to add a delay. To deduce yourself this information, you can count
 the number of iterations (when it's small enough) or look at the addresses
@@ -1021,7 +999,7 @@ of the instructions (which we do not provide here) by zooming a bit more.
 </p>
 
 
-<div id="orgb539ae5" class="figure">
+<div id="org5f589a8" class="figure">
 <p><img src="img/konata/konata_cache_decode_pretty.png" alt="konata_cache_decode_pretty.png" />
 </p>
 <p><span class="figure-number">Figure 2: </span>Loop over a variable to add a delay.</p>
@@ -1036,24 +1014,24 @@ is <code>0x00400e74</code> corresponding to the <code class="src src-asm"><span 
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 2: </span>Core of the Spectre attack, with a function which access an array and check for its index with a conditional branch (C and assembly code).</label><pre class="src src-c"><span style="color: #b9c791;">char</span> <span style="color: #91b9c7;">access_array</span><span style="color: #4EB8CA;">(</span><span style="color: #b9c791;">int</span> <span style="color: #47ba99;">x</span><span style="color: #4EB8CA;">)</span> <span style="color: #4EB8CA;">{</span>
-    <span style="color: #697375;">// </span><span style="color: #697375;">flushing the data which is used in the condition increases</span>
-    <span style="color: #697375;">// </span><span style="color: #697375;">probability of speculation</span>
-    <span style="color: #b9c791;">size_t</span> <span style="color: #47ba99;">len</span> = <span style="color: #4EB8CA;">sizeof</span><span style="color: #91b9c7;">(</span>DATA<span style="color: #91b9c7;">)</span> - <span style="color: #ef6787;">1</span>;
-    mfence<span style="color: #91b9c7;">()</span>;
-    flush<span style="color: #91b9c7;">(</span>&amp;len<span style="color: #91b9c7;">)</span>;
-    flush<span style="color: #91b9c7;">(</span>&amp;x<span style="color: #91b9c7;">)</span>;
+<label class="org-src-name"><span class="listing-number">Listing 2: </span>Core of the Spectre attack, with a function which access an array and check for its index with a conditional branch (C and assembly code).</label><pre class="src src-c"><span style="color: #91b9c7;">char</span> <span style="color: #91b9c7;">access_array</span><span style="color: #4EB8CA; background-color: #212121;">(</span><span style="color: #91b9c7;">int</span> <span style="color: #47ba99;">x</span><span style="color: #4EB8CA; background-color: #212121;">)</span> <span style="color: #4EB8CA; background-color: #212121;">{</span>
+    <span style="color: #697375;">// flushing the data which is used in the condition increases</span>
+    <span style="color: #697375;">// probability of speculation</span>
+    <span style="color: #91b9c7;">size_t</span> <span style="color: #47ba99;">len</span> <span style="color: #4EB8CA;">=</span> <span style="color: #4EB8CA;">sizeof</span><span style="color: #91b9c7; background-color: #212121;">(</span><span style="color: #4FA8A3;">DATA</span><span style="color: #91b9c7; background-color: #212121;">)</span> <span style="color: #4EB8CA;">-</span> <span style="color: #4FA8A3;">1</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #ef6787;">mfence</span><span style="color: #91b9c7; background-color: #212121;">()</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #ef6787;">flush</span><span style="color: #91b9c7; background-color: #212121;">(</span><span style="color: #4EB8CA;">&amp;</span>len<span style="color: #91b9c7; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #ef6787;">flush</span><span style="color: #91b9c7; background-color: #212121;">(</span><span style="color: #4EB8CA;">&amp;</span>x<span style="color: #91b9c7; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
 
-    <span style="color: #697375;">// </span><span style="color: #697375;">ensure data is flushed at this point</span>
-    mfence<span style="color: #91b9c7;">()</span>;
+    <span style="color: #697375;">// ensure data is flushed at this point</span>
+    <span style="color: #ef6787;">mfence</span><span style="color: #91b9c7; background-color: #212121;">()</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
 
-    <span style="color: #697375;">// </span><span style="color: #697375;">check that only accessible part (DATA) can be accessed</span>
-    <span style="color: #4EB8CA;">if</span><span style="color: #91b9c7;">(</span><span style="color: #4FA8A3;">(</span><span style="color: #b9c791;">float</span><span style="color: #4FA8A3;">)</span>x / <span style="color: #4FA8A3;">(</span><span style="color: #b9c791;">float</span><span style="color: #4FA8A3;">)</span>len &lt; <span style="color: #ef6787;">1</span><span style="color: #91b9c7;">)</span> <span style="color: #91b9c7;">{</span>
-        <span style="color: #697375;">// </span><span style="color: #697375;">countermeasure: add the fence here</span>
-        <span style="color: #697375;">// </span><span style="color: #697375;">Encode in cache</span>
-        cache_encode<span style="color: #4FA8A3;">(</span>data<span style="color: #c791aa;">[</span>x<span style="color: #c791aa;">]</span><span style="color: #4FA8A3;">)</span>;
-    <span style="color: #91b9c7;">}</span>
-<span style="color: #4EB8CA;">}</span>
+    <span style="color: #697375;">// check that only accessible part (DATA) can be accessed</span>
+    <span style="color: #4EB8CA;">if</span><span style="color: #91b9c7; background-color: #212121;">(</span><span style="color: #4FA8A3; background-color: #212121;">(</span><span style="color: #91b9c7;">float</span><span style="color: #4FA8A3; background-color: #212121;">)</span>x <span style="color: #4EB8CA;">/</span> <span style="color: #4FA8A3; background-color: #212121;">(</span><span style="color: #91b9c7;">float</span><span style="color: #4FA8A3; background-color: #212121;">)</span>len <span style="color: #4EB8CA;">&lt;</span> <span style="color: #4FA8A3;">1</span><span style="color: #91b9c7; background-color: #212121;">)</span> <span style="color: #91b9c7; background-color: #212121;">{</span>
+        <span style="color: #697375;">// countermeasure: add the fence here</span>
+        <span style="color: #697375;">// Encode in cache</span>
+        <span style="color: #ef6787;">cache_encode</span><span style="color: #4FA8A3; background-color: #212121;">(</span>data<span style="color: #c791aa; background-color: #212121;">[</span>x<span style="color: #c791aa; background-color: #212121;">]</span><span style="color: #4FA8A3; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #91b9c7; background-color: #212121;">}</span>
+<span style="color: #4EB8CA; background-color: #212121;">}</span>
 </pre>
 </div>
 
@@ -1104,25 +1082,25 @@ instruction has been executed transiently when it is shadowed. After hitting
 </p>
 
 
-<div id="org4cb8396" class="figure">
+<div id="orgb9c52d6" class="figure">
 <p><img src="img/konata/konata_check_bound_with_transient_exec.png" alt="konata_check_bound_with_transient_exec.png" />
 </p>
 <p><span class="figure-number">Figure 3: </span>Bound check followed by a transient execution with the malicious index.</p>
 </div>
 
 <p>
-In Spectre's source code, we know that the function <code class="src src-c"><span style="color: #91b9c7;">memaccess</span><span style="color: #4EB8CA;">()</span></code> is used inside the <code class="src src-c"><span style="color: #91b9c7;">cache_encode</span><span style="color: #4EB8CA;">()</span></code> function, that means that it is used when the
+In Spectre's source code, we know that the function <code class="src src-c"><span style="color: #ef6787;">memaccess</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code> is used inside the <code class="src src-c"><span style="color: #ef6787;">cache_encode</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code> function, that means that it is used when the
 malicious transient load happened. Below the source code of this function
 and the corresponding assembly code:
 </p>
 
 <div class="org-src-container">
-<label class="org-src-name"><span class="listing-number">Listing 3: </span>Function that load a value pointed by <code>*p</code> (C and assembly code).</label><pre class="src src-c"><span style="color: #b9c791;">void</span> <span style="color: #91b9c7;">maccess</span><span style="color: #4EB8CA;">(</span><span style="color: #b9c791;">void</span> *<span style="color: #47ba99;">p</span><span style="color: #4EB8CA;">)</span> <span style="color: #4EB8CA;">{</span>
-    <span style="color: #4EB8CA;">volatile</span> <span style="color: #b9c791;">uint32_t</span> <span style="color: #47ba99;">value</span>;
-    <span style="color: #4EB8CA;">asm</span> <span style="color: #4EB8CA;">volatile</span><span style="color: #91b9c7;">(</span><span style="color: #fbaed2;">"LDR %0, [%1]\n\t"</span> : <span style="color: #fbaed2;">"=r"</span><span style="color: #4FA8A3;">(</span>value<span style="color: #4FA8A3;">)</span> : <span style="color: #fbaed2;">"r"</span><span style="color: #4FA8A3;">(</span>p<span style="color: #4FA8A3;">)</span><span style="color: #91b9c7;">)</span>;
-    <span style="color: #4EB8CA;">asm</span> <span style="color: #4EB8CA;">volatile</span><span style="color: #91b9c7;">(</span><span style="color: #fbaed2;">"DSB ISH"</span><span style="color: #91b9c7;">)</span>;
-    <span style="color: #4EB8CA;">asm</span> <span style="color: #4EB8CA;">volatile</span><span style="color: #91b9c7;">(</span><span style="color: #fbaed2;">"ISB"</span><span style="color: #91b9c7;">)</span>;
-<span style="color: #4EB8CA;">}</span>
+<label class="org-src-name"><span class="listing-number">Listing 3: </span>Function that load a value pointed by <code>*p</code> (C and assembly code).</label><pre class="src src-c"><span style="color: #91b9c7;">void</span> <span style="color: #91b9c7;">maccess</span><span style="color: #4EB8CA; background-color: #212121;">(</span><span style="color: #91b9c7;">void</span> <span style="color: #4EB8CA;">*</span><span style="color: #47ba99;">p</span><span style="color: #4EB8CA; background-color: #212121;">)</span> <span style="color: #4EB8CA; background-color: #212121;">{</span>
+    <span style="color: #4EB8CA;">volatile</span> <span style="color: #91b9c7;">uint32_t</span> <span style="color: #47ba99;">value</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #b9c791;">asm</span> <span style="color: #4EB8CA;">volatile</span><span style="color: #91b9c7; background-color: #212121;">(</span><span style="color: #fbaed2;">"LDR %0, [%1]\n\t"</span> : <span style="color: #fbaed2;">"=r"</span><span style="color: #4FA8A3; background-color: #212121;">(</span>value<span style="color: #4FA8A3; background-color: #212121;">)</span> : <span style="color: #fbaed2;">"r"</span><span style="color: #4FA8A3; background-color: #212121;">(</span>p<span style="color: #4FA8A3; background-color: #212121;">)</span><span style="color: #91b9c7; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #b9c791;">asm</span> <span style="color: #4EB8CA;">volatile</span><span style="color: #91b9c7; background-color: #212121;">(</span><span style="color: #fbaed2;">"DSB ISH"</span><span style="color: #91b9c7; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+    <span style="color: #b9c791;">asm</span> <span style="color: #4EB8CA;">volatile</span><span style="color: #91b9c7; background-color: #212121;">(</span><span style="color: #fbaed2;">"ISB"</span><span style="color: #91b9c7; background-color: #212121;">)</span><span style="color: #bdbdb3; background-color: #212121;">;</span>
+<span style="color: #4EB8CA; background-color: #212121;">}</span>
 </pre>
 </div>
 
@@ -1143,20 +1121,20 @@ and the corresponding assembly code:
 <p>
 If you zoom-in a bit, you will be able to see every execution stage for each
 instruction at a certain time. The first <code>ret</code> at address <code>0x40095c</code> is the
-return of the <code class="src src-c"><span style="color: #91b9c7;">flush</span><span style="color: #4EB8CA;">()</span></code> C function into the
-<code class="src src-c"><span style="color: #91b9c7;">access_array</span><span style="color: #4EB8CA;">()</span></code> function. You can see how
+return of the <code class="src src-c"><span style="color: #ef6787;">flush</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code> C function into the
+<code class="src src-c"><span style="color: #ef6787;">access_array</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code> function. You can see how
 long was the instruction at the searched address (with the <code class="src src-asm"><span style="color: #91b9c7;">b</span>.pl <span style="color: #ef6787;">0x400e88</span></code> mnemonic) to be executed due to the
 condition which was long to resolve, more than the others. This is
 graphically represented by an instruction which takes more space on the
 horizontal axis. The speculative execution happened just after it. The
-transient read you are interested in is the <code class="src src-asm"><span style="color: #91b9c7;">ldr</span> <span style="color: #4EB8CA;">x0</span>, <span style="color: #4EB8CA;">[</span>x0<span style="color: #4EB8CA;">]</span></code> at address <code>Ox400964</code> (in the <code class="src src-c"><span style="color: #91b9c7;">maccess</span><span style="color: #4EB8CA;">()</span></code> function), which is completed but never committed, and leak
+transient read you are interested in is the <code class="src src-asm"><span style="color: #91b9c7;">ldr</span> <span style="color: #4EB8CA;">x0</span>, <span style="color: #4EB8CA;">[</span>x0<span style="color: #4EB8CA;">]</span></code> at address <code>Ox400964</code> (in the <code class="src src-c"><span style="color: #ef6787;">maccess</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code> function), which is completed but never committed, and leak
 the secret value in the micro-architectural domain. You can see that this
 was the last transiently executed instruction in this block, if the bound
 check would have been 10 cycles shorter, then the attack would have failed!
 </p>
 
 
-<div id="org46f24a6" class="figure">
+<div id="orgc23b0f1" class="figure">
 <p><img src="img/konata/konata_check_bound_with_transient_exec_detailed.png" alt="konata_check_bound_with_transient_exec_detailed.png" />
 </p>
 <p><span class="figure-number">Figure 4: </span>Transient execution of a read instruction with a malicious index.</p>
@@ -1168,11 +1146,11 @@ transient execution of this load with a malicious index. That means that
 despite all the iterations, the branch predictor defeated the Spectre attack
 for the following iterations, which explains the bad results we had with
 this implementation. You could search for when this happened by looking at
-the assembly code of the main loop (C code already given <a href="#orgb64644d">here</a>):
+the assembly code of the main loop (C code already given <a href="#spectre_main_loop">here</a>):
 </p>
 
 
-<div id="orgc41e853" class="figure">
+<div id="orge0280ec" class="figure">
 <p><img src="img/konata/spectre_asm_core_loop.png" alt="spectre_asm_core_loop.png" />
 </p>
 <p><span class="figure-number">Figure 5: </span>Main loop of Spectre, which iterate over every byte in the secret string (Assembly code).</p>
@@ -1184,7 +1162,7 @@ Search for the address <code>0x004006ac</code> of the <code class="src src-asm">
 </p>
 
 
-<div id="orgc048932" class="figure">
+<div id="org3493863" class="figure">
 <p><img src="img/konata/konata_check_bound_defeat.png" alt="konata_check_bound_defeat.png" />
 </p>
 <p><span class="figure-number">Figure 6: </span>Spectre defeated by the branch predictor.</p>
@@ -1192,11 +1170,11 @@ Search for the address <code>0x004006ac</code> of the <code class="src src-asm">
 
 <p>
 You see the branch predictor defeating Spectre by predicting that the branch
-in <code class="src src-c"><span style="color: #91b9c7;">access_array</span><span style="color: #4EB8CA;">()</span></code> will not be taken, and
+in <code class="src src-c"><span style="color: #ef6787;">access_array</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code> will not be taken, and
 thus, directly executing the code after the branch at address
 <code>0x00400e88</code>. Since it is predicted not taken while it is in reality not
 taken because it's the attack, the branch predictor was not tricked by
-Spectre. Then the code enter the <code class="src src-c"><span style="color: #91b9c7;">cache_decode_pretty</span><span style="color: #4EB8CA;">()</span></code> function at the searched address to read the
+Spectre. Then the code enter the <code class="src src-c"><span style="color: #ef6787;">cache_decode_pretty</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code> function at the searched address to read the
 cached letters &#x2013; and the function will only find the bytes used in the
 training phase, no leaked bytes.
 </p>
@@ -1207,7 +1185,7 @@ Spectre, by taken the branch with a valid index.
 </p>
 
 
-<div id="org21855fa" class="figure">
+<div id="org1a16f8a" class="figure">
 <p><img src="img/konata/konata_check_bound_train.png" alt="konata_check_bound_train.png" />
 </p>
 <p><span class="figure-number">Figure 7: </span>Branch predictor being trained.</p>
@@ -1244,18 +1222,18 @@ parameters, with this command:
 </div>
 </div>
 
-<div id="outline-container-org8e024b2" class="outline-2">
-<h2 id="org8e024b2"><span class="section-number-2">3</span> Implementations</h2>
+<div id="outline-container-org99c4f47" class="outline-2">
+<h2 id="org99c4f47"><span class="section-number-2">3.</span> Implementations</h2>
 <div class="outline-text-2" id="text-3">
 </div>
 <div id="outline-container-implem_spectre" class="outline-3">
-<h3 id="implem_spectre"><span class="section-number-3">3.1</span> Spectre</h3>
+<h3 id="implem_spectre"><span class="section-number-3">3.1.</span> Spectre</h3>
 <div class="outline-text-3" id="text-implem_spectre">
 <p>
 Our implementation lives in the <code>spectre</code> directory of the repository:
 </p>
 
-<pre class="example" id="org50e8164">
+<pre class="example" id="org5d55cf8">
 spectre
 ├── asm.c
 ├── asm.h
@@ -1278,7 +1256,7 @@ It is composed of the following modules:
 <dl class="org-dl">
 <dt><code>asm</code></dt><dd>ARM assembly implementation. Directly inside the files, we
 described in details the use of the <code class="src src-asm"><span style="color: #91b9c7;">dsb</span></code>, <code class="src src-asm"><span style="color: #91b9c7;">isb</span></code> and <code class="src src-asm"><span style="color: #91b9c7;">dc</span> <span style="color: #4EB8CA;">civac</span></code> instructions in order to implement the
-<code class="src src-c"><span style="color: #91b9c7;">mfence</span><span style="color: #4EB8CA;">()</span></code>, <code class="src src-c"><span style="color: #91b9c7;">ifence</span><span style="color: #4EB8CA;">()</span></code>, <code class="src src-c"><span style="color: #91b9c7;">flush</span><span style="color: #4EB8CA;">()</span></code>, <code class="src src-c"><span style="color: #91b9c7;">rdtsc</span><span style="color: #4EB8CA;">()</span></code> functions as well as an anti-speculation, a
+<code class="src src-c"><span style="color: #ef6787;">mfence</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code>, <code class="src src-c"><span style="color: #ef6787;">ifence</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code>, <code class="src src-c"><span style="color: #ef6787;">flush</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code>, <code class="src src-c"><span style="color: #ef6787;">rdtsc</span><span style="color: #4EB8CA; background-color: #212121;">()</span></code> functions as well as an anti-speculation, a
 memory access function and Flush+Reload functions.</dd>
 <dt><code>main</code></dt><dd>Orchestrate all the modules. Handles the arguments, the
 meta-repetition of the attack, the memory allocations, and the metrics
@@ -1308,7 +1286,7 @@ instructions, or the choices that have been made.
 </div>
 
 <div id="outline-container-implem_gem5" class="outline-3">
-<h3 id="implem_gem5"><span class="section-number-3">3.2</span> gem5</h3>
+<h3 id="implem_gem5"><span class="section-number-3">3.2.</span> gem5</h3>
 <div class="outline-text-3" id="text-implem_gem5">
 <p>
 Our gem5 system lives in the <code>gem5</code> directory of the repository:
@@ -1379,8 +1357,8 @@ our <a href="https://www.mail-archive.com/gem5-users@gem5.org/msg18401.html">tic
 </div>
 </div>
 
-<div id="outline-container-org1e35345" class="outline-2">
-<h2 id="org1e35345"><span class="section-number-2">4</span> Appendices</h2>
+<div id="outline-container-orgd6ad2de" class="outline-2">
+<h2 id="orgd6ad2de"><span class="section-number-2">4.</span> Appendices</h2>
 <div class="outline-text-2" id="text-4">
 <p>
 If you are a gem5 user who experience some unresolved errors, you could check
@@ -1390,8 +1368,8 @@ the <a href="https://pierreay.github.io/reproduce-spectre-gem5/gem5_errors.html#
 </div>
 </div>
 <div id="postamble" class="status">
-<p class="author">Author: Pierre Ayoub</p>
-<p class="date">Created: 2021-06-01 mar. 15:58</p>
+<p class="author">Author: Pierre AYOUB Pierre Ayoub</p>
+<p class="date">Created: 2023-07-27 jeu. 15:01</p>
 <p class="validation"><a href="https://validator.w3.org/check?uri=referer">Validate</a></p>
 </div>
 </body>
