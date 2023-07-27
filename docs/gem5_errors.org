@@ -1,9 +1,9 @@
 #+TITLE: Troubleshooting gem5 Errors
+#+SETUPFILE: https://raw.githubusercontent.com/pierreay/orgcss/master/orgcss.setup
 #+AUTHOR: Pierre Ayoub
 #+EMAIL: pierre.ayoub@eurecom.fr
 #+LANGUAGE: en
 #+PROPERTY: header-args :eval never-export
-#+HTML_HEAD: <link rel="stylesheet" href="https://sandyuraz.com/styles/org.min.css">
 
 * Compilation Errors
   :PROPERTIES:

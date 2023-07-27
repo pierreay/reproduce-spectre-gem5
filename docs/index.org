@@ -1,9 +1,9 @@
 #+TITLE: Reproducing Spectre Attack with gem5, How To Do It Right?
+#+SETUPFILE: https://raw.githubusercontent.com/pierreay/orgcss/master/orgcss.setup
 #+AUTHOR: Pierre Ayoub
 #+EMAIL: pierre.ayoub@eurecom.fr
 #+LANGUAGE: en
 #+PROPERTY: header-args :eval never-export
-#+HTML_HEAD: <link rel="stylesheet" href="https://sandyuraz.com/styles/org.min.css">
 
 * Introduction
 
